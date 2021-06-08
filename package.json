@@ -1,0 +1,47 @@
+{
+  "name": "calliope-core",
+  "version": "1.0.0",
+  "description": "Smart contracts for codename Calliope, an application powering the NFTV model in Fashion",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "author": "Davy Peter Braun",
+  "license": "MIT",
+  "private": true,
+  "files": [
+    "./dist/**/*",
+    "./dist/*"
+  ],
+  "scripts": {
+    "dev": "hardhat node",
+    "test": "hardhat test",
+    "compile": "hardhat compile",
+    "etherscan:rinkeby": "hardhat verify --network rinkeby ",
+    "contracts:size": "hardhat size-contracts",
+    "contracts:check": "hardhat check"
+  },
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-etherscan": "^2.1.2",
+    "@nomiclabs/hardhat-solhint": "^2.0.0",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "@openzeppelin/hardhat-upgrades": "^1.8.2",
+    "@typechain/ethers-v5": "^7.0.0",
+    "@typechain/hardhat": "^2.0.1",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "^15.12.1",
+    "chai": "^4.3.4",
+    "dotenv": "^10.0.0",
+    "ethereum-waffle": "^3.3.0",
+    "ethers": "^5.3.0",
+    "ganache-cli": "^6.12.2",
+    "hardhat": "^2.3.0",
+    "hardhat-abi-exporter": "^2.2.1",
+    "hardhat-contract-sizer": "^2.0.3",
+    "hardhat-gas-reporter": "^1.0.4",
+    "hardhat-preprocessor": "^0.1.4",
+    "ts-generator": "^0.1.1",
+    "ts-node": "^10.0.0",
+    "typechain": "^5.0.0",
+    "typescript": "^4.3.2"
+  }
+}
