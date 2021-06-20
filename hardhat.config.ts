@@ -9,6 +9,8 @@ import 'hardhat-contract-sizer';
 import 'hardhat-abi-exporter';
 import 'hardhat-preprocessor';
 import 'hardhat-gas-reporter';
+import 'hardhat-deploy';
+import 'hardhat-tracer';
 
 require('dotenv').config();
 
@@ -36,6 +38,9 @@ const config: HardhatUserConfig = {
         }
       }
     }],
+  },
+  namedAccounts: {
+    deployer: 0,  // for use in hardhat-deploy
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY
