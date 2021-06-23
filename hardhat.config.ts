@@ -10,19 +10,20 @@ import 'hardhat-abi-exporter';
 import 'hardhat-preprocessor';
 import 'hardhat-gas-reporter';
 import 'hardhat-deploy';
-import 'hardhat-tracer';
+// import 'hardhat-tracer';
+import "solidity-coverage";
 
 require('dotenv').config();
 
 const RINKEBY_PUBLIC_KEY = process.env.RINKEBY_PUBLIC_KEY || '';
 const RINKEBY_PRIVATE_KEY = process.env.RINKEBY_PRIVATE_KEY || '';
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY || '';
-const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY|| '';
+const COINMARKETCAP_API_KEY = process.env.COINMARKETCAP_API_KEY || '';
 
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      loggingEnabled: false
+      loggingEnabled: true
     },
     rinkeby: {
       url: `https://rinkeby.infura.io/v3/${RINKEBY_PUBLIC_KEY}`,
@@ -39,11 +40,11 @@ const config: HardhatUserConfig = {
       }
     }],
   },
-  namedAccounts: {
-    deployer: 0,  // for use in hardhat-deploy
-  },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY
+  },
+  namedAccounts: {
+    deployer: 0,  // for use in hardhat-deploy
   },
   mocha: {
     timeout: 20000

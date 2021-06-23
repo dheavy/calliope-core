@@ -9,6 +9,7 @@
   },
   "include": [
     "hardhat.config.ts",
+    ".solcover.ts",
     "./deploy",
     "./test"
   ],

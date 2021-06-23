@@ -10,6 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 
 contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Burnable, ERC721Pausable  {
+
     using Counters for Counters.Counter;
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
@@ -21,9 +22,7 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
 
     string private _baseTokenURI;
     address private _storeContract;
-
-    // Mapping from skuHash to bool
-    mapping(bytes => bool) private _skuHashes;
+    bool private _isMinted;
 
     constructor(
         string memory name_,
@@ -35,11 +34,13 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
     {
         require(
             !_isEmptyString(sku_),
-            "Product: sku cannot be an empty string"
+            "Product: SKU cannot be an empty string"
         );
 
         _baseTokenURI = baseTokenURI_;
         sku = sku_;
+
+        _isMinted = false;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -82,20 +83,17 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
             storeContract_ != address(0),
             "Product: Store contract address cannot be 0x0"
         );
-        _storeContract = storeContract_;
-
-        bytes memory hash = _generateSkuHash(_storeContract, sku);
-
-        // Prevent minting twice.
         require(
-            _skuHashes[hash] == false,
-            "Product: a token already exists with this SKU hash"
+            _isMinted == false,
+            "Product: a token already exists with this SKU"
         );
-        _skuHashes[hash] = true;
+
+        _isMinted = true;
+        _storeContract = storeContract_;
 
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
-        _safeMint(_storeContract, _tokenIdTracker.current(), hash);
+        _safeMint(_storeContract, _tokenIdTracker.current(), abi.encodePacked(sku));
         _tokenIdTracker.increment();
     }
 
@@ -135,23 +133,6 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
         override(ERC721, ERC721Enumerable, ERC721Pausable)
     {
         super._beforeTokenTransfer(from_, to_, tokenId_);
-    }
-
-    function _generateSkuHash(
-        address storeContract_,
-        string memory sku_
-    )
-        internal
-        pure
-        virtual
-        returns (bytes memory)
-    {
-        require(
-            storeContract_ != address(0),
-            "Product: Store contract address cannot be 0x0"
-        );
-
-        return abi.encodePacked(storeContract_, sku_);
     }
 
     function _isEmptyString(
