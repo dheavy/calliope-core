@@ -18,11 +18,11 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
 
     string public sku;
 
-    Counters.Counter private _tokenIdTracker;
+    Counters.Counter internal _tokenIdTracker;
 
-    string private _baseTokenURI;
-    address private _storeContract;
-    bool private _isMinted;
+    string internal _baseTokenURI;
+    address internal _storeContract;
+    bool internal _isMinted;
 
     constructor(
         string memory name_,
@@ -33,8 +33,12 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
         ERC721(name_, symbol_)
     {
         require(
+            !_isEmptyString(baseTokenURI_),
+            "Product: baseTokenURI cannot be an empty string"
+        );
+        require(
             !_isEmptyString(sku_),
-            "Product: SKU cannot be an empty string"
+            "Product: sku cannot be an empty string"
         );
 
         _baseTokenURI = baseTokenURI_;
@@ -83,12 +87,7 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
             storeContract_ != address(0),
             "Product: Store contract address cannot be 0x0"
         );
-        require(
-            _isMinted == false,
-            "Product: a token already exists with this SKU"
-        );
 
-        _isMinted = true;
         _storeContract = storeContract_;
 
         // We cannot just use balanceOf to create the new tokenId because tokens
@@ -111,16 +110,6 @@ contract Product is Context, AccessControlEnumerable, ERC721Enumerable, ERC721Bu
         returns (bool)
     {
         return super.supportsInterface(interfaceId_);
-    }
-
-    function _baseURI()
-        internal
-        view
-        virtual
-        override
-        returns (string memory)
-    {
-        return _baseTokenURI;
     }
 
     function _beforeTokenTransfer(

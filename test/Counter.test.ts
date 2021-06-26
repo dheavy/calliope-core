@@ -1,11 +1,11 @@
 import { ethers } from 'hardhat';
-import { Counter } from '../typechain/Counter';
-import chai, { expect } from 'chai';
+import { Contract, Wallet } from 'ethers';
+import { should, expect } from 'chai';
 
-chai.should();
+should();
 
 describe('Counter', () => {
-  let counter: Counter;
+  let counter: Contract;
 
   beforeEach(async () => {
     const signers = await ethers.getSigners();
@@ -13,10 +13,9 @@ describe('Counter', () => {
       'Counter',
       signers[0]
     );
-    counter = (await CounterFactory.deploy()) as Counter;
+    counter = await CounterFactory.deploy();
     await counter.deployed();
     const initialCount = await counter.getCount();
-
     expect(initialCount).to.eq(0);
   });
 
