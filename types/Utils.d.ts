@@ -21,7 +21,6 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface UtilsInterface extends ethers.utils.Interface {
   functions: {
     "areStringEquals(string,string)": FunctionFragment;
-    "c_0xdcf489d7(bytes32)": FunctionFragment;
     "isEmptyString(string)": FunctionFragment;
   };
 
@@ -30,20 +29,12 @@ interface UtilsInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(
-    functionFragment: "c_0xdcf489d7",
-    values: [BytesLike]
-  ): string;
-  encodeFunctionData(
     functionFragment: "isEmptyString",
     values: [string]
   ): string;
 
   decodeFunctionResult(
     functionFragment: "areStringEquals",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xdcf489d7",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -104,11 +95,6 @@ export class Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    c_0xdcf489d7(
-      c__0xdcf489d7: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     isEmptyString(str_: string, overrides?: CallOverrides): Promise<[boolean]>;
   };
 
@@ -118,11 +104,6 @@ export class Utils extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  c_0xdcf489d7(
-    c__0xdcf489d7: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   isEmptyString(str_: string, overrides?: CallOverrides): Promise<boolean>;
 
   callStatic: {
@@ -131,11 +112,6 @@ export class Utils extends BaseContract {
       str2_: string,
       overrides?: CallOverrides
     ): Promise<boolean>;
-
-    c_0xdcf489d7(
-      c__0xdcf489d7: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     isEmptyString(str_: string, overrides?: CallOverrides): Promise<boolean>;
   };
@@ -149,11 +125,6 @@ export class Utils extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    c_0xdcf489d7(
-      c__0xdcf489d7: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isEmptyString(str_: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
@@ -161,11 +132,6 @@ export class Utils extends BaseContract {
     areStringEquals(
       str1_: string,
       str2_: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xdcf489d7(
-      c__0xdcf489d7: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

@@ -27,7 +27,6 @@ interface ProductInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
-    "c_0x6ac40360(bytes32)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
@@ -76,10 +75,6 @@ interface ProductInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
-  encodeFunctionData(
-    functionFragment: "c_0x6ac40360",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -190,10 +185,6 @@ interface ProductInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x6ac40360",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -354,11 +345,6 @@ export class Product extends BaseContract {
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
-
-    c_0x6ac40360(
-      c__0x6ac40360: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -523,11 +509,6 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  c_0x6ac40360(
-    c__0x6ac40360: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   getApproved(
     tokenId: BigNumberish,
     overrides?: CallOverrides
@@ -678,11 +659,6 @@ export class Product extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
-
-    c_0x6ac40360(
-      c__0x6ac40360: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -898,11 +874,6 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    c_0x6ac40360(
-      c__0x6ac40360: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     getApproved(
       tokenId: BigNumberish,
       overrides?: CallOverrides
@@ -1073,11 +1044,6 @@ export class Product extends BaseContract {
     burn(
       tokenId: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    c_0x6ac40360(
-      c__0x6ac40360: BytesLike,
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getApproved(
