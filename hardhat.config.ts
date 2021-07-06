@@ -41,9 +41,20 @@ const config: HardhatUserConfig = {
       settings: {
         optimizer: {
           enabled: true,
+          runs: 500
         }
       }
     }],
+    settings: {
+      // `smoddit` mocking lib requires access to the internal storage layout
+      // of the smart contracts. The Solidity compiler exposes this via
+      // the storageLayout flag
+      outputSelection: {
+        "*": {
+          "*": ["storageLayout"]
+        }
+      },
+    }
   },
   etherscan: {
     apiKey: ETHERSCAN_API_KEY

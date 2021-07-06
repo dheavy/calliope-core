@@ -35,11 +35,12 @@ interface ProductInterface extends ethers.utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
-    "mint(address)": FunctionFragment;
+    "mint(address,string)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
+    "previousOwner(uint256)": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
     "revokeRole(bytes32,address)": FunctionFragment;
     "safeTransferFrom(address,address,uint256)": FunctionFragment;
@@ -51,8 +52,10 @@ interface ProductInterface extends ethers.utils.Interface {
     "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "totalSupply()": FunctionFragment;
+    "transferAfterAuction(uint256,address)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
     "unpause()": FunctionFragment;
+    "updateTokenURI(uint256,string)": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -105,7 +108,10 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
-  encodeFunctionData(functionFragment: "mint", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [string, string]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
@@ -113,6 +119,10 @@ interface ProductInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "pause", values?: undefined): string;
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "previousOwner",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "renounceRole",
     values: [BytesLike, string]
@@ -152,10 +162,18 @@ interface ProductInterface extends ethers.utils.Interface {
     values?: undefined
   ): string;
   encodeFunctionData(
+    functionFragment: "transferAfterAuction",
+    values: [BigNumberish, string]
+  ): string;
+  encodeFunctionData(
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "updateTokenURI",
+    values: [BigNumberish, string]
+  ): string;
 
   decodeFunctionResult(
     functionFragment: "DEFAULT_ADMIN_ROLE",
@@ -204,6 +222,10 @@ interface ProductInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "previousOwner",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "renounceRole",
     data: BytesLike
   ): Result;
@@ -236,10 +258,18 @@ interface ProductInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "transferAfterAuction",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "updateTokenURI",
+    data: BytesLike
+  ): Result;
 
   events: {
     "Approval(address,address,uint256)": EventFragment;
@@ -368,6 +398,7 @@ export class Product extends BaseContract {
 
     mint(
       storeContract_: string,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -383,6 +414,11 @@ export class Product extends BaseContract {
     ): Promise<ContractTransaction>;
 
     paused(overrides?: CallOverrides): Promise<[boolean]>;
+
+    previousOwner(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[string]>;
 
     renounceRole(
       role: BytesLike,
@@ -444,6 +480,12 @@ export class Product extends BaseContract {
 
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
+    transferAfterAuction(
+      tokenId_: BigNumberish,
+      to_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     transferFrom(
       from: string,
       to: string,
@@ -452,6 +494,12 @@ export class Product extends BaseContract {
     ): Promise<ContractTransaction>;
 
     unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -518,6 +566,7 @@ export class Product extends BaseContract {
 
   mint(
     storeContract_: string,
+    baseTokenURI_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -530,6 +579,8 @@ export class Product extends BaseContract {
   ): Promise<ContractTransaction>;
 
   paused(overrides?: CallOverrides): Promise<boolean>;
+
+  previousOwner(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   renounceRole(
     role: BytesLike,
@@ -588,6 +639,12 @@ export class Product extends BaseContract {
 
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
+  transferAfterAuction(
+    tokenId_: BigNumberish,
+    to_: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   transferFrom(
     from: string,
     to: string,
@@ -596,6 +653,12 @@ export class Product extends BaseContract {
   ): Promise<ContractTransaction>;
 
   unpause(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  updateTokenURI(
+    tokenId_: BigNumberish,
+    baseTokenURI_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -657,7 +720,11 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    mint(storeContract_: string, overrides?: CallOverrides): Promise<void>;
+    mint(
+      storeContract_: string,
+      baseTokenURI_: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     name(overrides?: CallOverrides): Promise<string>;
 
@@ -666,6 +733,11 @@ export class Product extends BaseContract {
     pause(overrides?: CallOverrides): Promise<void>;
 
     paused(overrides?: CallOverrides): Promise<boolean>;
+
+    previousOwner(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<string>;
 
     renounceRole(
       role: BytesLike,
@@ -724,6 +796,12 @@ export class Product extends BaseContract {
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
+    transferAfterAuction(
+      tokenId_: BigNumberish,
+      to_: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferFrom(
       from: string,
       to: string,
@@ -732,6 +810,12 @@ export class Product extends BaseContract {
     ): Promise<void>;
 
     unpause(overrides?: CallOverrides): Promise<void>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      baseTokenURI_: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
   filters: {
@@ -860,6 +944,7 @@ export class Product extends BaseContract {
 
     mint(
       storeContract_: string,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -875,6 +960,11 @@ export class Product extends BaseContract {
     ): Promise<BigNumber>;
 
     paused(overrides?: CallOverrides): Promise<BigNumber>;
+
+    previousOwner(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     renounceRole(
       role: BytesLike,
@@ -936,6 +1026,12 @@ export class Product extends BaseContract {
 
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
+    transferAfterAuction(
+      tokenId_: BigNumberish,
+      to_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     transferFrom(
       from: string,
       to: string,
@@ -944,6 +1040,12 @@ export class Product extends BaseContract {
     ): Promise<BigNumber>;
 
     unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -1019,6 +1121,7 @@ export class Product extends BaseContract {
 
     mint(
       storeContract_: string,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1034,6 +1137,11 @@ export class Product extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    previousOwner(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
 
     renounceRole(
       role: BytesLike,
@@ -1095,6 +1203,12 @@ export class Product extends BaseContract {
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    transferAfterAuction(
+      tokenId_: BigNumberish,
+      to_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     transferFrom(
       from: string,
       to: string,
@@ -1103,6 +1217,12 @@ export class Product extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     unpause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      baseTokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

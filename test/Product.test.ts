@@ -4,40 +4,54 @@ import { expect, use } from 'chai';
 import asPromised from 'chai-as-promised';
 import { Contract, ContractFactory } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
+import { smockit, MockContract } from '@eth-optimism/smock';
 
 use(asPromised);
 
 const chance = new Chance();
 let ProductFactory: ContractFactory;
+let UtilsFactory: ContractFactory;
 
 describe('Product', () => {
   let product: Contract;
+  let Utils: Contract;
+  let MockUtils: MockContract;
   let sku: string;
   let name: string;
   let symbol: string;
-  let baseTokenURI: string;
   let signers: SignerWithAddress[];
 
   beforeEach(async () => {
     signers = await ethers.getSigners();
+
+    UtilsFactory = await ethers.getContractFactory('Utils', signers[0]);
+    Utils = await UtilsFactory.deploy();
+
+    MockUtils = await smockit(Utils);
+    MockUtils.smocked.isEmptyString.will.return.with((str: string) => str === '');
+
     ProductFactory = await ethers.getContractFactory(
       'Product',
-      signers[0]
+      {
+        signer: signers[0],
+        libraries: {
+          Utils: MockUtils.address
+        }
+      }
     );
 
     name = chance.sentence({ words: 3 });
-    baseTokenURI = chance.url();
     sku = chance.word();
     symbol = chance.word({
       length: chance.natural({ min: 1, max: 5 })
     }).toUpperCase();
 
-    product = await ProductFactory.deploy(name, symbol, baseTokenURI, sku);
+    product = await ProductFactory.deploy(name, symbol, sku);
   });
 
   describe('#constructor', () => {
     it('should be able to deploy', async () => {
-      await expect(ProductFactory.deploy(name, symbol, baseTokenURI, sku))
+      await expect(ProductFactory.deploy(name, symbol, sku))
         .eventually.fulfilled;
     });
 
@@ -50,51 +64,27 @@ describe('Product', () => {
       expect(product.symbol).to.exist;
       await expect(product.symbol()).to.eventually.eq(symbol);
     });
-
-    it('should revert if "baseTokenURI" is missing in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, null, 'sku'))
-        .to.eventually.be.rejectedWith("Cannot read property 'length' of null");
-    });
-
-    it('should revert if "baseTokenURI" is not a string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, [], 'sku'))
-        .to.eventually.be.rejectedWith('Product: baseTokenURI cannot be an empty string');
-
-      await expect(ProductFactory.deploy(name, symbol, 0, 'sku'))
-        .to.eventually.be.rejectedWith('Product: baseTokenURI cannot be an empty string');
-    });
-
-    it('should revert if "baseTokenURI" is an empty string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, '', 'sku'))
-        .to.eventually.be.rejectedWith('Product: baseTokenURI cannot be an empty string');
-    });
-
-    it('should deploy even if "baseTokenURI" is a spaces-filled string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, ' ', 'sku'))
-        .not.to.eventually.be.rejected;
-    });
-
     it('should revert if "sku" is missing in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, 'uri', null))
+      await expect(ProductFactory.deploy(name, symbol, null))
         .to.eventually.be.rejectedWith("Cannot read property 'length' of null");
     });
 
     it('should revert if "sku" is not a string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, 'uri', []))
+      await expect(ProductFactory.deploy(name, symbol, []))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
 
-      await expect(ProductFactory.deploy(name, symbol, 'uri', 0))
+      await expect(ProductFactory.deploy(name, symbol, 0))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should revert if "sku" is an empty string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, 'uri', ''))
+      await expect(ProductFactory.deploy(name, symbol, ''))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should deploy even if "sku" is a spaces-filled string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, 'uri', ' '))
-        .not.to.eventually.be.rejected;
+      await expect(ProductFactory.deploy(name, symbol, ' '))
+        .to.eventually.be.fulfilled;
     });
 
     it('should not be paused', async () => {
@@ -115,7 +105,7 @@ describe('Product', () => {
       const unableToPause = signers[1];
 
       await expect(product.connect(unableToPause).pause())
-        .to.eventually.be.rejectedWith('Product: must have pauser role to pause');
+        .to.eventually.be.rejectedWith('Product: cannot pause');
     });
 
     it('should pause if invoked by account with pauser role', async () => {
@@ -135,7 +125,7 @@ describe('Product', () => {
       const unableToUnpause = signers[1];
 
       await expect(product.connect(unableToUnpause).unpause())
-        .to.eventually.be.rejectedWith('Product: must have pauser role to unpause');
+        .to.eventually.be.rejectedWith('Product: cannot unpause');
     });
 
     it('should unpause if invoked by account with pauser role', async () => {
@@ -155,13 +145,14 @@ describe('Product', () => {
   describe('#mint', () => {
     it('should set deployer as minter role by default', async () => {
       const deployer = signers[0];
-      await expect(product.connect(deployer).mint(signers[1].address)).not.to.be.eventually.rejected;
+      await expect(product.connect(deployer).mint(signers[1].address, ''))
+        .not.to.be.eventually.rejected;
     });
 
     it('should revert if attempted from non-minter role', async () => {
       const cannotMint = signers[1];
-      await expect(product.connect(cannotMint).mint(signers[0].address))
-        .to.be.eventually.rejectedWith('Product: must have minter role to mint');
+      await expect(product.connect(cannotMint).mint(signers[0].address, ''))
+        .to.be.eventually.rejectedWith('Product: cannot mint');
     });
 
     it('should revert if missing argument address', async () => {
@@ -170,8 +161,25 @@ describe('Product', () => {
     });
 
     it('should revert if attempting to mint on zero address', async () => {
-      await expect(product.connect(signers[0]).mint(ethers.constants.AddressZero))
+      await expect(product.connect(signers[0]).mint(ethers.constants.AddressZero, ''))
         .to.be.eventually.rejectedWith('Product: Store contract address cannot be 0x0');
+    });
+
+    it('should set the token URI', async () => {
+      const tokenId = 0;
+      const baseURI = 'ipfs://foo.bar/';
+      const tokenURI = baseURI + tokenId;
+      await product.mint(signers[0].address, baseURI);
+
+      await expect(product.tokenURI(tokenId))
+        .to.eventually.eq(tokenURI);
+    });
+
+    it('should emit a Transfer event', async () => {
+      const tokenId = 0;
+      await expect(product.mint(signers[0].address, ''))
+        .to.emit(product, 'Transfer')
+        .withArgs(ethers.constants.AddressZero, signers[0].address, tokenId);
     });
   });
 
@@ -227,6 +235,96 @@ describe('Product', () => {
     it('should state it supports ERC-721 metadata through supportsInterface()', async () => {
       await expect(product.supportsInterface(_INTERFACE_ID_ERC721_METADATA))
         .to.eventually.eq(false);
+    });
+  });
+
+  describe('#transferAfterAuction', () => {
+    it('should revert if invoked by non-owner or non-approved', async () => {
+      const owner = signers[0];
+      const approved = signers[1];
+      const willFail = signers[2];
+      const transferTo = signers[3];
+
+      await product.setApprovalForAll(approved.address, true);
+      await product.mint(owner.address, '');
+
+      await expect(product.connect(willFail).transferAfterAuction(0, transferTo.address))
+        .to.eventually.be.rejectedWith('Product: owner or approved only');
+
+      await expect(product.connect(approved).transferAfterAuction(0, owner.address))
+        .to.eventually.be.fulfilled;
+
+        await expect(product.connect(owner).transferAfterAuction(0, approved.address))
+        .to.eventually.be.fulfilled;
+    });
+
+    it('should transfer ownership', async () => {
+      const firstOwner = signers[0];
+      const secondOwner = signers[1];
+
+      await product.mint(firstOwner.address, '');
+
+      await product.transferAfterAuction(0, secondOwner.address);
+      await expect(product.previousOwner(0))
+        .to.eventually.eq(firstOwner.address);
+
+      await product.connect(secondOwner).transferAfterAuction(0, firstOwner.address);
+      await expect(product.previousOwner(0))
+        .to.eventually.eq(secondOwner.address);
+    });
+  });
+
+  describe('#tokenURI', () => {
+    it('should return the full token URI', async () => {
+      const tokenId = 0;
+      const baseURI = 'ipfs://foo.bar/';
+      const tokenURI = baseURI + tokenId;
+
+      const owner = signers[0];
+      await product.mint(owner.address, baseURI);
+
+      await expect(product.tokenURI(tokenId))
+        .to.eventually.eq(tokenURI);
+
+      await expect(product.connect(signers[0]).tokenURI(tokenId))
+        .to.eventually.eq(tokenURI)
+    });
+  });
+
+  describe('#updateTokenURI', () => {
+    it('should revert if invoked by non-owner or non-approved', async () => {
+      const owner = signers[0];
+      const approved = signers[1];
+      const willFail = signers[2];
+
+      await product.setApprovalForAll(approved.address, true);
+      await product.mint(owner.address, '');
+
+      await expect(product.connect(willFail).updateTokenURI(0, 'foo'))
+        .to.eventually.be.rejectedWith('Product: owner or approved only');
+
+      await expect(product.connect(owner).updateTokenURI(0, 'foo'))
+        .to.eventually.be.fulfilled;
+
+      await expect(product.connect(approved).updateTokenURI(0, 'foo'))
+        .to.eventually.be.fulfilled;
+    });
+
+    it('should update the full token URI by changing the URI base', async () => {
+      const tokenId = 0;
+      const baseURI = 'ipfs://foo.bar/';
+      const tokenURI = baseURI + tokenId;
+
+      const owner = signers[0];
+      await product.mint(owner.address, '');
+
+      await expect(product.tokenURI(tokenId))
+        .to.eventually.eq(tokenId.toString());
+
+      await product.updateTokenURI(0, baseURI);
+
+      await expect(product.tokenURI(tokenId))
+        .to.eventually.eq(tokenURI);
     });
   });
 });
