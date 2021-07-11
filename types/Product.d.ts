@@ -27,6 +27,7 @@ interface ProductInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
+    "c_0x6ac40360(bytes32)": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
@@ -50,6 +51,7 @@ interface ProductInterface extends ethers.utils.Interface {
     "tokenByIndex(uint256)": FunctionFragment;
     "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
+    "totalStock()": FunctionFragment;
     "totalSupply()": FunctionFragment;
     "transferAfterAuction(uint256,address)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -75,6 +77,10 @@ interface ProductInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "c_0x6ac40360",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -153,6 +159,10 @@ interface ProductInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "totalStock",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "totalSupply",
     values?: undefined
   ): string;
@@ -185,6 +195,10 @@ interface ProductInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x6ac40360",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -244,6 +258,7 @@ interface ProductInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "totalStock", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "totalSupply",
     data: BytesLike
@@ -342,9 +357,14 @@ export class Product extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     burn(
-      tokenId: BigNumberish,
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -464,6 +484,8 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[string]>;
 
+    totalStock(overrides?: CallOverrides): Promise<[number]>;
+
     totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferAfterAuction(
@@ -505,9 +527,14 @@ export class Product extends BaseContract {
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   burn(
-    tokenId: BigNumberish,
+    tokenId_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  c_0x6ac40360(
+    c__0x6ac40360: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -618,6 +645,8 @@ export class Product extends BaseContract {
 
   tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
+  totalStock(overrides?: CallOverrides): Promise<number>;
+
   totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
   transferAfterAuction(
@@ -658,7 +687,12 @@ export class Product extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    burn(tokenId: BigNumberish, overrides?: CallOverrides): Promise<void>;
+    burn(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -770,6 +804,8 @@ export class Product extends BaseContract {
 
     tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
+    totalStock(overrides?: CallOverrides): Promise<number>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferAfterAuction(
@@ -870,8 +906,13 @@ export class Product extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(
-      tokenId: BigNumberish,
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     getApproved(
@@ -995,6 +1036,8 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    totalStock(overrides?: CallOverrides): Promise<BigNumber>;
+
     totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferAfterAuction(
@@ -1042,8 +1085,13 @@ export class Product extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     burn(
-      tokenId: BigNumberish,
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getApproved(
@@ -1166,6 +1214,8 @@ export class Product extends BaseContract {
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    totalStock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 

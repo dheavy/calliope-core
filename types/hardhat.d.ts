@@ -77,9 +77,9 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IERC165__factory>;
     getContractFactory(
-      name: "Utils",
+      name: "StringUtils",
       signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Utils__factory>;
+    ): Promise<Contracts.StringUtils__factory>;
     getContractFactory(
       name: "Product",
       signerOrOptions?: ethers.Signer | FactoryOptions

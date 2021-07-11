@@ -10,7 +10,7 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "./lib/Utils.sol";
+import "./lib/StringUtils.sol";
 
 contract Product is
     Context,
@@ -25,8 +25,11 @@ contract Product is
 
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
+
     mapping(uint256 => address) public previousOwner;
     string public sku;
+
+    uint16 public totalStock;
 
     Counters.Counter internal _tokenIdTracker;
     address internal _storeContract;
@@ -34,15 +37,23 @@ contract Product is
     constructor(
         string memory name_,
         string memory symbol_,
-        string memory sku_
+        string memory sku_,
+        uint16 totalStock_
     )
         ERC721(name_, symbol_)
     {
         require(
-            !Utils.isEmptyString(sku_),
+            !StringUtils.isEmptyString(sku_),
             "Product: sku cannot be an empty string"
         );
+        require(
+            // uint16 limit -> 2**16 - 1 => 65535
+            // Set a lower value for readibility => 60000
+            totalStock_ >= 1 && totalStock_ <= 60000,
+            "Product: total stock must be >= 1 and <= 60000"
+        );
 
+        totalStock = totalStock_;
         sku = sku_;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
@@ -174,13 +185,27 @@ contract Product is
         super._beforeTokenTransfer(from_, to_, tokenId_);
     }
 
+    function burn(
+        uint256 tokenId_
+    )
+        public
+        virtual
+        override(ERC721Burnable)
+    {
+        require(
+            _isApprovedOrOwner(_msgSender(), tokenId_),
+            "Product: owner or approved only"
+        );
+        _burn(tokenId_);
+    }
+
     function _burn(
-        uint256 tokenId
+        uint256 tokenId_
     )
         internal
         virtual
         override(ERC721, ERC721URIStorage)
     {
-        super._burn(tokenId);
+        super._burn(tokenId_);
     }
 }

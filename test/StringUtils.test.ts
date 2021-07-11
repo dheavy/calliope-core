@@ -6,61 +6,61 @@ import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 
 use(asPromised);
 
-describe('Utils', () => {
-  let UtilsFactory: ContractFactory;
+describe('StringUtils', () => {
+  let StringUtilsFactory: ContractFactory;
   let signers: SignerWithAddress[];
-  let Utils: Contract;
+  let StringUtils: Contract;
 
   beforeEach(async () => {
     signers = await ethers.getSigners();
-    UtilsFactory = await ethers.getContractFactory('Utils',signers[0]);
-    Utils = await UtilsFactory.deploy();
+    StringUtilsFactory = await ethers.getContractFactory('StringUtils',signers[0]);
+    StringUtils = await StringUtilsFactory.deploy();
   });
 
   describe('#isEmptyString', () => {
     it("should return true when passed argument is an empty string", async () => {
-      await expect(Utils.isEmptyString(""))
+      await expect(StringUtils.isEmptyString(""))
         .to.eventually.be.fulfilled;
     });
 
     it("should return false when passed argument is a non empty string", async () => {
-      await expect(Utils.isEmptyString(" "))
+      await expect(StringUtils.isEmptyString(" "))
         .to.eventually.be.fulfilled;
 
-      await expect(Utils.isEmptyString("foo"))
+      await expect(StringUtils.isEmptyString("foo"))
         .to.eventually.be.fulfilled;
     });
   });
 
   describe('#areStringEquals', () => {
     it('should return true if arguments are equal when cast to strings', async () => {
-      await expect(Utils.areStringEquals('foo', 'foo'))
+      await expect(StringUtils.areStringEquals('foo', 'foo'))
         .to.eventually.eq(true);
 
-      await expect(Utils.areStringEquals('', ''))
+      await expect(StringUtils.areStringEquals('', ''))
         .to.eventually.eq(true);
 
-      await expect(Utils.areStringEquals(' ', ' '))
+      await expect(StringUtils.areStringEquals(' ', ' '))
         .to.eventually.eq(true);
 
-      await expect(Utils.areStringEquals(0, 0))
+      await expect(StringUtils.areStringEquals(0, 0))
         .to.eventually.eq(true);
 
-      await expect(Utils.areStringEquals(0, ''))
+      await expect(StringUtils.areStringEquals(0, ''))
         .to.eventually.eq(true);
     });
 
     it('should return false if arguments are not equal when cast to strings', async () => {
-      await expect(Utils.areStringEquals('fooo', 'foo'))
+      await expect(StringUtils.areStringEquals('fooo', 'foo'))
         .to.eventually.eq(false);
 
-      await expect(Utils.areStringEquals('0', 0))
+      await expect(StringUtils.areStringEquals('0', 0))
         .to.eventually.eq(false);
 
-      await expect(Utils.areStringEquals(' ', ''))
+      await expect(StringUtils.areStringEquals(' ', ''))
         .to.eventually.eq(false);
 
-      await expect(Utils.areStringEquals('0', '0 '))
+      await expect(StringUtils.areStringEquals('0', '0 '))
         .to.eventually.eq(false);
     });
   });

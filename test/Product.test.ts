@@ -10,12 +10,12 @@ use(asPromised);
 
 const chance = new Chance();
 let ProductFactory: ContractFactory;
-let UtilsFactory: ContractFactory;
+let StringUtilsFactory: ContractFactory;
 
 describe('Product', () => {
   let product: Contract;
-  let Utils: Contract;
-  let MockUtils: MockContract;
+  let StringUtils: Contract;
+  let MockStringUtils: MockContract;
   let sku: string;
   let name: string;
   let symbol: string;
@@ -24,18 +24,18 @@ describe('Product', () => {
   beforeEach(async () => {
     signers = await ethers.getSigners();
 
-    UtilsFactory = await ethers.getContractFactory('Utils', signers[0]);
-    Utils = await UtilsFactory.deploy();
+    StringUtilsFactory = await ethers.getContractFactory('StringUtils', signers[0]);
+    StringUtils = await StringUtilsFactory.deploy();
 
-    MockUtils = await smockit(Utils);
-    MockUtils.smocked.isEmptyString.will.return.with((str: string) => str === '');
+    MockStringUtils = await smockit(StringUtils);
+    MockStringUtils.smocked.isEmptyString.will.return.with((str: string) => str === '');
 
     ProductFactory = await ethers.getContractFactory(
       'Product',
       {
         signer: signers[0],
         libraries: {
-          Utils: MockUtils.address
+          StringUtils: MockStringUtils.address
         }
       }
     );
@@ -46,12 +46,12 @@ describe('Product', () => {
       length: chance.natural({ min: 1, max: 5 })
     }).toUpperCase();
 
-    product = await ProductFactory.deploy(name, symbol, sku);
+    product = await ProductFactory.deploy(name, symbol, sku, 5);
   });
 
   describe('#constructor', () => {
     it('should be able to deploy', async () => {
-      await expect(ProductFactory.deploy(name, symbol, sku))
+      await expect(ProductFactory.deploy(name, symbol, sku, 1))
         .eventually.fulfilled;
     });
 
@@ -65,25 +65,39 @@ describe('Product', () => {
       await expect(product.symbol()).to.eventually.eq(symbol);
     });
     it('should revert if "sku" is missing in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, null))
+      await expect(ProductFactory.deploy(name, symbol, null, 1))
         .to.eventually.be.rejectedWith("Cannot read property 'length' of null");
     });
 
     it('should revert if "sku" is not a string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, []))
+      await expect(ProductFactory.deploy(name, symbol, [], 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
 
-      await expect(ProductFactory.deploy(name, symbol, 0))
+      await expect(ProductFactory.deploy(name, symbol, 0, 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should revert if "sku" is an empty string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, ''))
+      await expect(ProductFactory.deploy(name, symbol, '', 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should deploy even if "sku" is a spaces-filled string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, ' '))
+      await expect(ProductFactory.deploy(name, symbol, ' ', 1))
+        .to.eventually.be.fulfilled;
+    });
+
+    it('should revert if totalStock passed in constructor is below 1 or above 60000', async () => {
+      await expect(ProductFactory.deploy(name, symbol, sku, 0))
+        .to.eventually.be.rejectedWith('Product: total stock must be >= 1 and <= 60000');
+
+      await expect(ProductFactory.deploy(name, symbol, sku, 60001))
+        .to.eventually.be.rejectedWith('Product: total stock must be >= 1 and <= 60000');
+
+      await expect(ProductFactory.deploy(name, symbol, sku, 1))
+        .to.eventually.be.fulfilled;
+
+      await expect(ProductFactory.deploy(name, symbol, sku, 60000))
         .to.eventually.be.fulfilled;
     });
 
@@ -325,6 +339,28 @@ describe('Product', () => {
 
       await expect(product.tokenURI(tokenId))
         .to.eventually.eq(tokenURI);
+    });
+  });
+
+  describe('#burn', () => {
+    it('should revert if invoked by non-owner or non-approved', async () => {
+      const owner = signers[0];
+      const approved = signers[1];
+      const willFail = signers[2];
+
+      await product.setApprovalForAll(approved.address, true);
+
+      await product.mint(owner.address, '');
+      await expect(product.connect(willFail).burn(0))
+        .to.eventually.be.rejectedWith('Product: owner or approved only');
+
+      await product.mint(owner.address, '');
+      await expect(product.connect(owner).burn(1))
+        .to.eventually.be.fulfilled;
+
+      await product.mint(owner.address, '');
+      await expect(product.connect(approved).burn(2))
+        .to.eventually.be.fulfilled;
     });
   });
 });
