@@ -159,31 +159,26 @@ describe('Product', () => {
   describe('#mint', () => {
     it('should set deployer as minter role by default', async () => {
       const deployer = signers[0];
-      await expect(product.connect(deployer).mint(signers[1].address, ''))
-        .not.to.be.eventually.rejected;
+      await expect(product.connect(deployer).mint(''))
+        .to.be.eventually.fulfilled;
     });
 
     it('should revert if attempted from non-minter role', async () => {
       const cannotMint = signers[1];
-      await expect(product.connect(cannotMint).mint(signers[0].address, ''))
+      await expect(product.connect(cannotMint).mint(''))
         .to.be.eventually.rejectedWith('Product: cannot mint');
     });
 
-    it('should revert if missing argument address', async () => {
+    it('should revert if missing argument baseTokenURI', async () => {
       await expect(product.connect(signers[0]).mint())
         .to.be.eventually.rejected;
-    });
-
-    it('should revert if attempting to mint on zero address', async () => {
-      await expect(product.connect(signers[0]).mint(ethers.constants.AddressZero, ''))
-        .to.be.eventually.rejectedWith('Product: Store contract address cannot be 0x0');
     });
 
     it('should set the token URI', async () => {
       const tokenId = 0;
       const baseURI = 'ipfs://foo.bar/';
       const tokenURI = baseURI + tokenId;
-      await product.mint(signers[0].address, baseURI);
+      await product.mint(baseURI);
 
       await expect(product.tokenURI(tokenId))
         .to.eventually.eq(tokenURI);
@@ -191,7 +186,7 @@ describe('Product', () => {
 
     it('should emit a Transfer event', async () => {
       const tokenId = 0;
-      await expect(product.mint(signers[0].address, ''))
+      await expect(product.mint(''))
         .to.emit(product, 'Transfer')
         .withArgs(ethers.constants.AddressZero, signers[0].address, tokenId);
     });
@@ -260,7 +255,7 @@ describe('Product', () => {
       const transferTo = signers[3];
 
       await product.setApprovalForAll(approved.address, true);
-      await product.mint(owner.address, '');
+      await product.mint('');
 
       await expect(product.connect(willFail).transferAfterAuction(0, transferTo.address))
         .to.eventually.be.rejectedWith('Product: owner or approved only');
@@ -276,7 +271,7 @@ describe('Product', () => {
       const firstOwner = signers[0];
       const secondOwner = signers[1];
 
-      await product.mint(firstOwner.address, '');
+      await product.mint('');
 
       await product.transferAfterAuction(0, secondOwner.address);
       await expect(product.previousOwner(0))
@@ -295,7 +290,7 @@ describe('Product', () => {
       const tokenURI = baseURI + tokenId;
 
       const owner = signers[0];
-      await product.mint(owner.address, baseURI);
+      await product.mint(baseURI);
 
       await expect(product.tokenURI(tokenId))
         .to.eventually.eq(tokenURI);
@@ -312,7 +307,7 @@ describe('Product', () => {
       const willFail = signers[2];
 
       await product.setApprovalForAll(approved.address, true);
-      await product.mint(owner.address, '');
+      await product.mint('');
 
       await expect(product.connect(willFail).updateTokenURI(0, 'foo'))
         .to.eventually.be.rejectedWith('Product: owner or approved only');
@@ -329,8 +324,7 @@ describe('Product', () => {
       const baseURI = 'ipfs://foo.bar/';
       const tokenURI = baseURI + tokenId;
 
-      const owner = signers[0];
-      await product.mint(owner.address, '');
+      await product.mint('');
 
       await expect(product.tokenURI(tokenId))
         .to.eventually.eq(tokenId.toString());
@@ -350,15 +344,15 @@ describe('Product', () => {
 
       await product.setApprovalForAll(approved.address, true);
 
-      await product.mint(owner.address, '');
+      await product.mint('');
       await expect(product.connect(willFail).burn(0))
         .to.eventually.be.rejectedWith('Product: owner or approved only');
 
-      await product.mint(owner.address, '');
+      await product.mint('');
       await expect(product.connect(owner).burn(1))
         .to.eventually.be.fulfilled;
 
-      await product.mint(owner.address, '');
+      await product.mint('');
       await expect(product.connect(approved).burn(2))
         .to.eventually.be.fulfilled;
     });

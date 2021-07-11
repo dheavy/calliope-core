@@ -32,7 +32,6 @@ contract Product is
     uint16 public totalStock;
 
     Counters.Counter internal _tokenIdTracker;
-    address internal _storeContract;
 
     constructor(
         string memory name_,
@@ -84,7 +83,6 @@ contract Product is
     }
 
     function mint(
-        address storeContract_,
         string calldata baseTokenURI_
     )
         public
@@ -93,17 +91,11 @@ contract Product is
             hasRole(MINTER_ROLE, _msgSender()),
             "Product: cannot mint"
         );
-        require(
-            storeContract_ != address(0),
-            "Product: Store contract address cannot be 0x0"
-        );
-
-        _storeContract = storeContract_;
 
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 currentTokenId = _tokenIdTracker.current();
-        _safeMint(_storeContract, currentTokenId);
+        _safeMint(_msgSender(), currentTokenId);
         _setTokenURI(
             _tokenIdTracker.current(),
             string(abi.encodePacked(baseTokenURI_, currentTokenId.toString()))
@@ -173,18 +165,6 @@ contract Product is
         return super.tokenURI(tokenId);
     }
 
-    function _beforeTokenTransfer(
-        address from_,
-        address to_,
-        uint256 tokenId_
-    )
-        internal
-        virtual
-        override(ERC721, ERC721Enumerable, ERC721Pausable)
-    {
-        super._beforeTokenTransfer(from_, to_, tokenId_);
-    }
-
     function burn(
         uint256 tokenId_
     )
@@ -197,6 +177,18 @@ contract Product is
             "Product: owner or approved only"
         );
         _burn(tokenId_);
+    }
+
+    function _beforeTokenTransfer(
+        address from_,
+        address to_,
+        uint256 tokenId_
+    )
+        internal
+        virtual
+        override(ERC721, ERC721Enumerable, ERC721Pausable)
+    {
+        super._beforeTokenTransfer(from_, to_, tokenId_);
     }
 
     function _burn(
