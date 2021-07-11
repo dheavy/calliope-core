@@ -10,9 +10,11 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "./interfaces/IProduct.sol";
 import "./lib/StringUtils.sol";
 
 contract Product is
+    IProduct,
     Context,
     AccessControlEnumerable,
     ERC721Enumerable,
@@ -34,15 +36,13 @@ contract Product is
     Counters.Counter internal _tokenIdTracker;
 
     constructor(
-        string memory name_,
-        string memory symbol_,
-        string memory sku_,
+        ProductData memory product_,
         uint16 totalStock_
     )
-        ERC721(name_, symbol_)
+        ERC721(product_.name, product_.symbol)
     {
         require(
-            !StringUtils.isEmptyString(sku_),
+            !StringUtils.isEmptyString(product_.sku),
             "Product: sku cannot be an empty string"
         );
         require(
@@ -53,7 +53,7 @@ contract Product is
         );
 
         totalStock = totalStock_;
-        sku = sku_;
+        sku = product_.sku;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -125,6 +125,7 @@ contract Product is
         address to_
     )
         external
+        override
     {
         // require(msg.sender == marketContract, "Product: callable from Market only");
         require(

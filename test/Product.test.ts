@@ -13,6 +13,12 @@ let ProductFactory: ContractFactory;
 let StringUtilsFactory: ContractFactory;
 
 describe('Product', () => {
+  type ProductDataStruct = {
+    name: string;
+    symbol: string;
+    sku: string;
+  };
+  let productData: ProductDataStruct;
   let product: Contract;
   let StringUtils: Contract;
   let MockStringUtils: MockContract;
@@ -46,12 +52,14 @@ describe('Product', () => {
       length: chance.natural({ min: 1, max: 5 })
     }).toUpperCase();
 
-    product = await ProductFactory.deploy(name, symbol, sku, 5);
+    productData = { name, symbol, sku };
+
+    product = await ProductFactory.deploy(productData, 5);
   });
 
   describe('#constructor', () => {
     it('should be able to deploy', async () => {
-      await expect(ProductFactory.deploy(name, symbol, sku, 1))
+      await expect(ProductFactory.deploy(productData, 1))
         .eventually.fulfilled;
     });
 
@@ -65,39 +73,39 @@ describe('Product', () => {
       await expect(product.symbol()).to.eventually.eq(symbol);
     });
     it('should revert if "sku" is missing in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, null, 1))
+      await expect(ProductFactory.deploy({ name, symbol, sku: null }, 1))
         .to.eventually.be.rejectedWith("Cannot read property 'length' of null");
     });
 
     it('should revert if "sku" is not a string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, [], 1))
+      await expect(ProductFactory.deploy({ name, symbol, sku: [] }, 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
 
-      await expect(ProductFactory.deploy(name, symbol, 0, 1))
+      await expect(ProductFactory.deploy({ name, symbol, sku: 0 }, 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should revert if "sku" is an empty string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, '', 1))
+      await expect(ProductFactory.deploy({ name, symbol, sku: '' }, 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
     });
 
     it('should deploy even if "sku" is a spaces-filled string in the constructor', async () => {
-      await expect(ProductFactory.deploy(name, symbol, ' ', 1))
+      await expect(ProductFactory.deploy({ name, symbol, sku: ' ' }, 1))
         .to.eventually.be.fulfilled;
     });
 
     it('should revert if totalStock passed in constructor is below 1 or above 60000', async () => {
-      await expect(ProductFactory.deploy(name, symbol, sku, 0))
+      await expect(ProductFactory.deploy(productData, 0))
         .to.eventually.be.rejectedWith('Product: total stock must be >= 1 and <= 60000');
 
-      await expect(ProductFactory.deploy(name, symbol, sku, 60001))
+      await expect(ProductFactory.deploy(productData, 60001))
         .to.eventually.be.rejectedWith('Product: total stock must be >= 1 and <= 60000');
 
-      await expect(ProductFactory.deploy(name, symbol, sku, 1))
+      await expect(ProductFactory.deploy(productData, 1))
         .to.eventually.be.fulfilled;
 
-      await expect(ProductFactory.deploy(name, symbol, sku, 60000))
+      await expect(ProductFactory.deploy(productData, 60000))
         .to.eventually.be.fulfilled;
     });
 
