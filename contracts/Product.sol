@@ -28,6 +28,8 @@ contract Product is
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
+    address public market;
+
     mapping(uint256 => address) public previousOwner;
     string public sku;
 
@@ -37,6 +39,7 @@ contract Product is
 
     constructor(
         ProductData memory product_,
+        address market_,
         uint16 totalStock_
     )
         ERC721(product_.name, product_.symbol)
@@ -54,6 +57,7 @@ contract Product is
 
         totalStock = totalStock_;
         sku = product_.sku;
+        market = market_;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -127,11 +131,7 @@ contract Product is
         external
         override
     {
-        // require(msg.sender == marketContract, "Product: callable from Market only");
-        require(
-            _isApprovedOrOwner(_msgSender(), tokenId_),
-            "Product: owner or approved only"
-        );
+        require(msg.sender == market, "Product: callable from Market only");
         previousOwner[tokenId_] = ownerOf(tokenId_);
         _safeTransfer(ownerOf(tokenId_), to_, tokenId_, "");
     }
