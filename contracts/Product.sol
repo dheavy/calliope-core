@@ -10,8 +10,10 @@ import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Pausable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
+import "hardhat/console.sol";
 import "./interfaces/IProduct.sol";
 import "./lib/StringUtils.sol";
+import "./Market.sol";
 
 contract Product is
     IProduct,
@@ -28,18 +30,46 @@ contract Product is
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
-    address public market;
+    // Mapping of token IDs to Market contract addresses
+    mapping (uint256 => address) public markets;
 
-    mapping(uint256 => address) public previousOwner;
+    // Mapping of token IDs to address of previous owner
+    // (when transfering ownership, we need a reference to the previous owners
+    // to distribute their share of the bid).
+    mapping(uint256 => address) public previousOwners;
+
+    // Mapping of token IDs to address of Product creators.
+    mapping(uint256 => address) public creators;
+
     string public sku;
 
     uint16 public totalStock;
 
     Counters.Counter internal _tokenIdTracker;
 
+    modifier onlyApprovedOrOwner(
+        address spender,
+        uint256 tokenId_
+    ) {
+        require(
+            _isApprovedOrOwner(spender, tokenId_),
+            "Product: owner or approved only"
+        );
+        _;
+    }
+
+    modifier onlyExistingToken(
+        uint256 tokenId_
+    ) {
+        require(
+            _exists(tokenId_),
+            "Product: invalid token"
+        );
+        _;
+    }
+
     constructor(
         ProductData memory product_,
-        address market_,
         uint16 totalStock_
     )
         ERC721(product_.name, product_.symbol)
@@ -57,7 +87,6 @@ contract Product is
 
         totalStock = totalStock_;
         sku = product_.sku;
-        market = market_;
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -87,25 +116,34 @@ contract Product is
     }
 
     function mint(
-        string calldata baseTokenURI_
+        string calldata baseTokenURI_,
+        IMarket.BidShares memory bidShares_
     )
         public
+        override
     {
         require(
             hasRole(MINTER_ROLE, _msgSender()),
             "Product: cannot mint"
+        );
+        require(
+            _tokenIdTracker.current() + 1 <= totalStock,
+            "Product: no mint left"
         );
 
         // We cannot just use balanceOf to create the new tokenId because tokens
         // can be burned (destroyed), so we need a separate counter.
         uint256 currentTokenId = _tokenIdTracker.current();
         _safeMint(_msgSender(), currentTokenId);
+        _createMarket(_msgSender(), currentTokenId);
         _setTokenURI(
-            _tokenIdTracker.current(),
+            currentTokenId,
             string(abi.encodePacked(baseTokenURI_, currentTokenId.toString()))
         );
-
         _tokenIdTracker.increment();
+        creators[currentTokenId] = msg.sender;
+        previousOwners[currentTokenId] = msg.sender;
+        IMarket(markets[currentTokenId]).setBidShares(currentTokenId, bidShares_);
     }
 
     function supportsInterface(
@@ -124,15 +162,62 @@ contract Product is
         return super.supportsInterface(interfaceId_);
     }
 
+    function setAsk(
+        uint256 tokenId_,
+        IMarket.Ask memory ask_
+    )
+        public
+        override
+        onlyApprovedOrOwner(msg.sender, tokenId_)
+    {
+        IMarket(markets[tokenId_]).setAsk(tokenId_, ask_);
+    }
+
+    function acceptBid(
+        uint256 tokenId_,
+        IMarket.Bid memory bid_
+    )
+        public
+        override
+        onlyApprovedOrOwner(msg.sender, tokenId_)
+    {
+        IMarket(markets[tokenId_]).acceptBid(tokenId_, bid_);
+    }
+
+    function removeBid(
+        uint256 tokenId_
+    )
+        external
+        override
+    {
+        IMarket(markets[tokenId_]).removeBid(tokenId_, msg.sender);
+    }
+
+    function setBid(
+        uint256 tokenId_,
+        IMarket.Bid memory bid_
+    )
+        public
+        override
+        onlyExistingToken(tokenId_)
+    {
+        require(
+            msg.sender == bid_.bidder,
+            "Market: invalid bidder"
+        );
+        IMarket(markets[tokenId_]).setBid(tokenId_, bid_, msg.sender);
+    }
+
     function transferAfterAuction(
         uint256 tokenId_,
         address to_
     )
         external
         override
+        onlyExistingToken(tokenId_)
+        onlyApprovedOrOwner(msg.sender, tokenId_)
     {
-        require(msg.sender == market, "Product: callable from Market only");
-        previousOwner[tokenId_] = ownerOf(tokenId_);
+        previousOwners[tokenId_] = ownerOf(tokenId_);
         _safeTransfer(ownerOf(tokenId_), to_, tokenId_, "");
     }
 
@@ -141,29 +226,28 @@ contract Product is
         string calldata baseTokenURI_
     )
         external
+        override
+        onlyApprovedOrOwner(msg.sender, tokenId_)
+        onlyExistingToken(tokenId_)
     {
         require(
-            _isApprovedOrOwner(_msgSender(), tokenId_),
-            "Product: owner or approved only"
-        );
-        require(
             _exists(tokenId_),
-            "Product: token ID does not exist"
+            "Product: invalid token ID"
         );
         _setTokenURI(tokenId_, string(abi.encodePacked(baseTokenURI_, tokenId_.toString())));
     }
 
-
     function tokenURI(
-        uint256 tokenId
+        uint256 tokenId_
     )
         public
         view
         virtual
         override(ERC721, ERC721URIStorage)
+        onlyExistingToken(tokenId_)
         returns (string memory)
     {
-        return super.tokenURI(tokenId);
+        return super.tokenURI(tokenId_);
     }
 
     function burn(
@@ -172,12 +256,34 @@ contract Product is
         public
         virtual
         override(ERC721Burnable)
+        onlyApprovedOrOwner(msg.sender, tokenId_)
+        onlyExistingToken(tokenId_)
+    {
+        _burn(tokenId_);
+    }
+
+    function removeAsk(
+        uint256 tokenId_
+    )
+        external
+        override
+        onlyApprovedOrOwner(msg.sender, tokenId_)
+    {
+        IMarket(markets[tokenId_]).removeAsk(tokenId_);
+    }
+
+    function _createMarket(
+        address owner_,
+        uint256 tokenId_
+    )
+        internal
+        virtual
     {
         require(
-            _isApprovedOrOwner(_msgSender(), tokenId_),
-            "Product: owner or approved only"
+            markets[tokenId_] == address(0),
+            "Product: Market exists"
         );
-        _burn(tokenId_);
+        markets[tokenId_] = address(new Market(address(this), owner_));
     }
 
     function _beforeTokenTransfer(

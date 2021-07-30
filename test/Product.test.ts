@@ -1,10 +1,19 @@
 import Chance from 'chance';
 import { ethers } from 'hardhat';
-import { expect, use } from 'chai';
 import asPromised from 'chai-as-promised';
-import { Contract, ContractFactory } from 'ethers';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
-import { smockit, MockContract } from '@eth-optimism/smock';
+import {
+  expect,
+  use
+} from 'chai';
+import {
+  Contract,
+  ContractFactory
+} from 'ethers';
+import {
+  smockit,
+  MockContract
+} from '@eth-optimism/smock';
 
 use(asPromised);
 
@@ -255,41 +264,41 @@ describe('Product', () => {
     });
   });
 
-  describe('#transferAfterAuction', () => {
-    it('should revert if invoked by non-owner or non-approved', async () => {
-      const owner = signers[0];
-      const approved = signers[1];
-      const willFail = signers[2];
-      const transferTo = signers[3];
+  // describe('#transferAfterAuction', () => {
+  //   it('should revert if invoked by non-owner or non-approved', async () => {
+  //     const owner = signers[0];
+  //     const approved = signers[1];
+  //     const willFail = signers[2];
+  //     const transferTo = signers[3];
 
-      await product.setApprovalForAll(approved.address, true);
-      await product.mint('');
+  //     await product.setApprovalForAll(approved.address, true);
+  //     await product.mint('');
 
-      await expect(product.connect(willFail).transferAfterAuction(0, transferTo.address))
-        .to.eventually.be.rejectedWith('Product: owner or approved only');
+  //     await expect(product.connect(willFail).transferAfterAuction(0, transferTo.address))
+  //       .to.eventually.be.rejectedWith('Product: owner or approved only');
 
-      await expect(product.connect(approved).transferAfterAuction(0, owner.address))
-        .to.eventually.be.fulfilled;
+  //     await expect(product.connect(approved).transferAfterAuction(0, owner.address))
+  //       .to.eventually.be.fulfilled;
 
-        await expect(product.connect(owner).transferAfterAuction(0, approved.address))
-        .to.eventually.be.fulfilled;
-    });
+  //       await expect(product.connect(owner).transferAfterAuction(0, approved.address))
+  //       .to.eventually.be.fulfilled;
+  //   });
 
-    it('should transfer ownership', async () => {
-      const firstOwner = signers[0];
-      const secondOwner = signers[1];
+  //   it('should transfer ownership', async () => {
+  //     const firstOwner = signers[0];
+  //     const secondOwner = signers[1];
 
-      await product.mint('');
+  //     await product.mint('');
 
-      await product.transferAfterAuction(0, secondOwner.address);
-      await expect(product.previousOwner(0))
-        .to.eventually.eq(firstOwner.address);
+  //     await product.transferAfterAuction(0, secondOwner.address);
+  //     await expect(product.previousOwners(0))
+  //       .to.eventually.eq(firstOwner.address);
 
-      await product.connect(secondOwner).transferAfterAuction(0, firstOwner.address);
-      await expect(product.previousOwner(0))
-        .to.eventually.eq(secondOwner.address);
-    });
-  });
+  //     await product.connect(secondOwner).transferAfterAuction(0, firstOwner.address);
+  //     await expect(product.previousOwners(0))
+  //       .to.eventually.eq(secondOwner.address);
+  //   });
+  // });
 
   describe('#tokenURI', () => {
     it('should return the full token URI', async () => {

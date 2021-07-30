@@ -21,8 +21,8 @@
     "compile": "hardhat compile",
     "deploy:product:localhost": "hardhat deploy --network hardhat --tags Product",
     "etherscan:rinkeby": "hardhat verify --network rinkeby ",
-    "contracts:size": "hardhat size-contracts",
-    "contracts:check": "hardhat check"
+    "size": "hardhat size-contracts",
+    "check": "hardhat check"
   },
   "devDependencies": {
     "@eth-optimism/smock": "^1.1.6",

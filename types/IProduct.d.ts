@@ -21,20 +21,96 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
 interface IProductInterface extends ethers.utils.Interface {
   functions: {
+    "acceptBid(uint256,tuple)": FunctionFragment;
+    "mint(string,tuple)": FunctionFragment;
+    "removeAsk(uint256)": FunctionFragment;
+    "removeBid(uint256)": FunctionFragment;
+    "setAsk(uint256,tuple)": FunctionFragment;
+    "setBid(uint256,tuple)": FunctionFragment;
     "transferAfterAuction(uint256,address)": FunctionFragment;
+    "updateTokenURI(uint256,string)": FunctionFragment;
   };
 
+  encodeFunctionData(
+    functionFragment: "acceptBid",
+    values: [
+      BigNumberish,
+      {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      }
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "mint",
+    values: [
+      string,
+      {
+        previousOwner: { value: BigNumberish };
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      }
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeAsk",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "removeBid",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setAsk",
+    values: [BigNumberish, { amount: BigNumberish; currency: string }]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "setBid",
+    values: [
+      BigNumberish,
+      {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      }
+    ]
+  ): string;
   encodeFunctionData(
     functionFragment: "transferAfterAuction",
     values: [BigNumberish, string]
   ): string;
+  encodeFunctionData(
+    functionFragment: "updateTokenURI",
+    values: [BigNumberish, string]
+  ): string;
 
+  decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setAsk", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "setBid", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferAfterAuction",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(
+    functionFragment: "updateTokenURI",
+    data: BytesLike
+  ): Result;
 
-  events: {};
+  events: {
+    "TokenMetadataURIUpdated(uint256,address,string)": EventFragment;
+    "TokenURIUpdated(uint256,address,string)": EventFragment;
+  };
+
+  getEvent(nameOrSignatureOrTopic: "TokenMetadataURIUpdated"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "TokenURIUpdated"): EventFragment;
 }
 
 export class IProduct extends BaseContract {
@@ -81,12 +157,118 @@ export class IProduct extends BaseContract {
   interface: IProductInterface;
 
   functions: {
+    acceptBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    mint(
+      baseTokenURI_: string,
+      bidShares_: {
+        previousOwner: { value: BigNumberish };
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    removeAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    removeBid(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    setBid(
+      tokenId_: BigNumberish,
+      bid: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     transferAfterAuction(
       tokenId_: BigNumberish,
       to_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      tokenURI_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
   };
+
+  acceptBid(
+    tokenId_: BigNumberish,
+    bid_: {
+      amount: BigNumberish;
+      currency: string;
+      bidder: string;
+      recipient: string;
+      sellOnShare: { value: BigNumberish };
+    },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  mint(
+    baseTokenURI_: string,
+    bidShares_: {
+      previousOwner: { value: BigNumberish };
+      creator: { value: BigNumberish };
+      owner: { value: BigNumberish };
+    },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  removeAsk(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  removeBid(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setAsk(
+    tokenId_: BigNumberish,
+    ask_: { amount: BigNumberish; currency: string },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  setBid(
+    tokenId_: BigNumberish,
+    bid: {
+      amount: BigNumberish;
+      currency: string;
+      bidder: string;
+      recipient: string;
+      sellOnShare: { value: BigNumberish };
+    },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   transferAfterAuction(
     tokenId_: BigNumberish,
@@ -94,28 +276,214 @@ export class IProduct extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  updateTokenURI(
+    tokenId_: BigNumberish,
+    tokenURI_: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   callStatic: {
+    acceptBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    mint(
+      baseTokenURI_: string,
+      bidShares_: {
+        previousOwner: { value: BigNumberish };
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    removeAsk(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    removeBid(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    setAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    setBid(
+      tokenId_: BigNumberish,
+      bid: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     transferAfterAuction(
       tokenId_: BigNumberish,
       to_: string,
       overrides?: CallOverrides
     ): Promise<void>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      tokenURI_: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
   };
 
-  filters: {};
+  filters: {
+    TokenMetadataURIUpdated(
+      tokenId_?: BigNumberish | null,
+      owner_?: null,
+      uri_?: null
+    ): TypedEventFilter<
+      [BigNumber, string, string],
+      { tokenId_: BigNumber; owner_: string; uri_: string }
+    >;
+
+    TokenURIUpdated(
+      tokenId_?: BigNumberish | null,
+      owner_?: null,
+      uri_?: null
+    ): TypedEventFilter<
+      [BigNumber, string, string],
+      { tokenId_: BigNumber; owner_: string; uri_: string }
+    >;
+  };
 
   estimateGas: {
+    acceptBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    mint(
+      baseTokenURI_: string,
+      bidShares_: {
+        previousOwner: { value: BigNumberish };
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    removeAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    removeBid(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    setBid(
+      tokenId_: BigNumberish,
+      bid: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     transferAfterAuction(
       tokenId_: BigNumberish,
       to_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      tokenURI_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
   };
 
   populateTransaction: {
+    acceptBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    mint(
+      baseTokenURI_: string,
+      bidShares_: {
+        previousOwner: { value: BigNumberish };
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    removeBid(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    setBid(
+      tokenId_: BigNumberish,
+      bid: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+        sellOnShare: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     transferAfterAuction(
       tokenId_: BigNumberish,
       to_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    updateTokenURI(
+      tokenId_: BigNumberish,
+      tokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
