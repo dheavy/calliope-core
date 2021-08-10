@@ -31,6 +31,7 @@ contract Product is
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
     // Mapping of token IDs to Market contract addresses
+    // (each token is linked to its own Market).
     mapping (uint256 => address) public markets;
 
     // Mapping of token IDs to address of previous owner
@@ -38,8 +39,9 @@ contract Product is
     // to distribute their share of the bid).
     mapping(uint256 => address) public previousOwners;
 
-    // Mapping of token IDs to address of Product creators.
-    mapping(uint256 => address) public creators;
+    mapping(uint256 => bool) public lendings;
+
+    address public creator;
 
     string public sku;
 
@@ -87,6 +89,7 @@ contract Product is
 
         totalStock = totalStock_;
         sku = product_.sku;
+        creator = _msgSender();
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
@@ -119,8 +122,9 @@ contract Product is
         string calldata baseTokenURI_,
         IMarket.BidShares memory bidShares_
     )
-        public
+        external
         override
+        whenNotPaused
     {
         require(
             hasRole(MINTER_ROLE, _msgSender()),
@@ -141,8 +145,7 @@ contract Product is
             string(abi.encodePacked(baseTokenURI_, currentTokenId.toString()))
         );
         _tokenIdTracker.increment();
-        creators[currentTokenId] = msg.sender;
-        previousOwners[currentTokenId] = msg.sender;
+        previousOwners[currentTokenId] = _msgSender();
         IMarket(markets[currentTokenId]).setBidShares(currentTokenId, bidShares_);
     }
 
@@ -166,8 +169,9 @@ contract Product is
         uint256 tokenId_,
         IMarket.Ask memory ask_
     )
-        public
+        external
         override
+        whenNotPaused
         onlyApprovedOrOwner(msg.sender, tokenId_)
     {
         IMarket(markets[tokenId_]).setAsk(tokenId_, ask_);
@@ -177,8 +181,9 @@ contract Product is
         uint256 tokenId_,
         IMarket.Bid memory bid_
     )
-        public
+        external
         override
+        whenNotPaused
         onlyApprovedOrOwner(msg.sender, tokenId_)
     {
         IMarket(markets[tokenId_]).acceptBid(tokenId_, bid_);
@@ -189,23 +194,25 @@ contract Product is
     )
         external
         override
+        whenNotPaused
     {
-        IMarket(markets[tokenId_]).removeBid(tokenId_, msg.sender);
+        IMarket(markets[tokenId_]).removeBid(tokenId_, _msgSender());
     }
 
     function setBid(
         uint256 tokenId_,
         IMarket.Bid memory bid_
     )
-        public
+        external
         override
+        whenNotPaused
         onlyExistingToken(tokenId_)
     {
         require(
-            msg.sender == bid_.bidder,
+            _msgSender() == bid_.bidder,
             "Market: invalid bidder"
         );
-        IMarket(markets[tokenId_]).setBid(tokenId_, bid_, msg.sender);
+        IMarket(markets[tokenId_]).setBid(tokenId_, bid_, _msgSender());
     }
 
     function transferAfterAuction(
@@ -214,6 +221,7 @@ contract Product is
     )
         external
         override
+        whenNotPaused
         onlyExistingToken(tokenId_)
         onlyApprovedOrOwner(msg.sender, tokenId_)
     {
@@ -255,6 +263,7 @@ contract Product is
     )
         public
         virtual
+        whenNotPaused
         override(ERC721Burnable)
         onlyApprovedOrOwner(msg.sender, tokenId_)
         onlyExistingToken(tokenId_)
@@ -267,9 +276,41 @@ contract Product is
     )
         external
         override
+        whenNotPaused
+        onlyExistingToken(tokenId_)
         onlyApprovedOrOwner(msg.sender, tokenId_)
     {
         IMarket(markets[tokenId_]).removeAsk(tokenId_);
+    }
+
+    function lend(
+        uint256 tokenId_
+    )
+        external
+        override
+        whenNotPaused
+    {
+        require(
+            lendings[tokenId_] == false,
+            "Product: already lent"
+        );
+        lendings[tokenId_] = true;
+        Market(markets[tokenId_]).pause();
+    }
+
+    function recover(
+        uint256 tokenId_
+    )
+        external
+        override
+        whenNotPaused
+    {
+        require(
+            lendings[tokenId_] == true,
+            "Product: not lent"
+        );
+        lendings[tokenId_] = false;
+        Market(markets[tokenId_]).unpause();
     }
 
     function _createMarket(
@@ -277,7 +318,6 @@ contract Product is
         uint256 tokenId_
     )
         internal
-        virtual
     {
         require(
             markets[tokenId_] == address(0),
@@ -292,7 +332,6 @@ contract Product is
         uint256 tokenId_
     )
         internal
-        virtual
         override(ERC721, ERC721Enumerable, ERC721Pausable)
     {
         super._beforeTokenTransfer(from_, to_, tokenId_);

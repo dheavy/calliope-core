@@ -112,6 +112,19 @@ const _abi = [
   {
     inputs: [
       {
+        internalType: "uint256",
+        name: "tokenId_",
+        type: "uint256",
+      },
+    ],
+    name: "lend",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
         internalType: "string",
         name: "baseTokenURI_",
         type: "string",
@@ -161,6 +174,19 @@ const _abi = [
       },
     ],
     name: "mint",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "tokenId_",
+        type: "uint256",
+      },
+    ],
+    name: "recover",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",

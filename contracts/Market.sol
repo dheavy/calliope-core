@@ -3,19 +3,16 @@ pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
 import "./interfaces/IMarket.sol";
 import "./Product.sol";
 
 contract Market is
     IMarket,
-    Ownable
+    Pausable
 {
     // Address to linked Product contract.
     address public product;
-
-    // Address from owner, i.e. message sender when creating this contract.
-    address private _owner;
 
     // Mapping of token IDs to mapping of EOA bidders to their bids for the token.
     mapping(uint256 => mapping(address => Bid)) private _bidders;
@@ -42,7 +39,6 @@ contract Market is
         address currency_
     ) {
         product = product_;
-        _owner = msg.sender;
         _currency = currency_;
     }
 
@@ -289,6 +285,22 @@ contract Market is
         return Decimal.mul(amount_, sharePercent_) / 100;
     }
 
+    function pause()
+        external
+        virtual
+        onlyProduct
+    {
+        _pause();
+    }
+
+    function unpause()
+        external
+        virtual
+        onlyProduct
+    {
+        _unpause();
+    }
+
     function _canAcceptBidAutomatically(
         uint256 tokenId_,
         Bid calldata bid_
@@ -321,7 +333,7 @@ contract Market is
 
         // Transfer bid share to Product creator.
         token.transfer(
-            Product(product).creators(tokenId_),
+            Product(product).creator(),
             splitShare(bidShares.creator, bid.amount)
         );
 

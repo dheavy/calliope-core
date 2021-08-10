@@ -58,4 +58,14 @@ interface IProduct {
         address to_
     )
         external;
+
+    function lend(
+        uint256 tokenId_
+    )
+        external;
+
+    function recover(
+        uint256 tokenId_
+    )
+        external;
 }

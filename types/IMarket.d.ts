@@ -544,36 +544,36 @@ export class IMarket extends BaseContract {
 
   filters: {
     AskCreated(
-      tokenId?: BigNumberish | null,
-      ask?: null
+      tokenId_?: BigNumberish | null,
+      ask_?: null
     ): TypedEventFilter<
       [
         BigNumber,
         [BigNumber, string] & { amount: BigNumber; currency: string }
       ],
       {
-        tokenId: BigNumber;
-        ask: [BigNumber, string] & { amount: BigNumber; currency: string };
+        tokenId_: BigNumber;
+        ask_: [BigNumber, string] & { amount: BigNumber; currency: string };
       }
     >;
 
     AskRemoved(
-      tokenId?: BigNumberish | null,
-      ask?: null
+      tokenId_?: BigNumberish | null,
+      ask_?: null
     ): TypedEventFilter<
       [
         BigNumber,
         [BigNumber, string] & { amount: BigNumber; currency: string }
       ],
       {
-        tokenId: BigNumber;
-        ask: [BigNumber, string] & { amount: BigNumber; currency: string };
+        tokenId_: BigNumber;
+        ask_: [BigNumber, string] & { amount: BigNumber; currency: string };
       }
     >;
 
     BidCreated(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -592,8 +592,8 @@ export class IMarket extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -610,8 +610,8 @@ export class IMarket extends BaseContract {
     >;
 
     BidFinalized(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -630,8 +630,8 @@ export class IMarket extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -648,8 +648,8 @@ export class IMarket extends BaseContract {
     >;
 
     BidRemoved(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -668,8 +668,8 @@ export class IMarket extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -686,8 +686,8 @@ export class IMarket extends BaseContract {
     >;
 
     BidShareUpdated(
-      tokenId?: BigNumberish | null,
-      bidShares?: null
+      tokenId_?: BigNumberish | null,
+      bidShares_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -702,8 +702,8 @@ export class IMarket extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bidShares: [
+        tokenId_: BigNumber;
+        bidShares_: [
           [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber }

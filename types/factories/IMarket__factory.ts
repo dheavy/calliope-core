@@ -13,7 +13,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -31,7 +31,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.Ask",
-        name: "ask",
+        name: "ask_",
         type: "tuple",
       },
     ],
@@ -44,7 +44,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -62,7 +62,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.Ask",
-        name: "ask",
+        name: "ask_",
         type: "tuple",
       },
     ],
@@ -75,7 +75,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -115,7 +115,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.Bid",
-        name: "bid",
+        name: "bid_",
         type: "tuple",
       },
     ],
@@ -128,7 +128,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -168,7 +168,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.Bid",
-        name: "bid",
+        name: "bid_",
         type: "tuple",
       },
     ],
@@ -181,7 +181,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -221,7 +221,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.Bid",
-        name: "bid",
+        name: "bid_",
         type: "tuple",
       },
     ],
@@ -234,7 +234,7 @@ const _abi = [
       {
         indexed: true,
         internalType: "uint256",
-        name: "tokenId",
+        name: "tokenId_",
         type: "uint256",
       },
       {
@@ -278,7 +278,7 @@ const _abi = [
         ],
         indexed: false,
         internalType: "struct IMarket.BidShares",
-        name: "bidShares",
+        name: "bidShares_",
         type: "tuple",
       },
     ],

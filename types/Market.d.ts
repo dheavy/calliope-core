@@ -27,16 +27,16 @@ interface MarketInterface extends ethers.utils.Interface {
     "currentAskForToken(uint256)": FunctionFragment;
     "getBidFromBidder(uint256,address)": FunctionFragment;
     "isValidBid(uint256,uint256)": FunctionFragment;
-    "owner()": FunctionFragment;
+    "pause()": FunctionFragment;
+    "paused()": FunctionFragment;
     "product()": FunctionFragment;
     "removeAsk(uint256)": FunctionFragment;
     "removeBid(uint256,address)": FunctionFragment;
-    "renounceOwnership()": FunctionFragment;
     "setAsk(uint256,tuple)": FunctionFragment;
     "setBid(uint256,tuple,address)": FunctionFragment;
     "setBidShares(uint256,tuple)": FunctionFragment;
     "splitShare(tuple,uint256)": FunctionFragment;
-    "transferOwnership(address)": FunctionFragment;
+    "unpause()": FunctionFragment;
   };
 
   encodeFunctionData(
@@ -78,7 +78,8 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "isValidBid",
     values: [BigNumberish, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "owner", values?: undefined): string;
+  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
+  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(functionFragment: "product", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "removeAsk",
@@ -87,10 +88,6 @@ interface MarketInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "removeBid",
     values: [BigNumberish, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "renounceOwnership",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "setAsk",
@@ -125,10 +122,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "splitShare",
     values: [{ value: BigNumberish }, BigNumberish]
   ): string;
-  encodeFunctionData(
-    functionFragment: "transferOwnership",
-    values: [string]
-  ): string;
+  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
 
   decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
   decodeFunctionResult(
@@ -148,14 +142,11 @@ interface MarketInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "isValidBid", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "owner", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "product", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "renounceOwnership",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "setAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setBid", data: BytesLike): Result;
   decodeFunctionResult(
@@ -163,10 +154,7 @@ interface MarketInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "splitShare", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "transferOwnership",
-    data: BytesLike
-  ): Result;
+  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
 
   events: {
     "AskCreated(uint256,tuple)": EventFragment;
@@ -175,7 +163,8 @@ interface MarketInterface extends ethers.utils.Interface {
     "BidFinalized(uint256,tuple)": EventFragment;
     "BidRemoved(uint256,tuple)": EventFragment;
     "BidShareUpdated(uint256,tuple)": EventFragment;
-    "OwnershipTransferred(address,address)": EventFragment;
+    "Paused(address)": EventFragment;
+    "Unpaused(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "AskCreated"): EventFragment;
@@ -184,7 +173,8 @@ interface MarketInterface extends ethers.utils.Interface {
   getEvent(nameOrSignatureOrTopic: "BidFinalized"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BidRemoved"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "BidShareUpdated"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "OwnershipTransferred"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
+  getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
 export class Market extends BaseContract {
@@ -302,7 +292,11 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
-    owner(overrides?: CallOverrides): Promise<[string]>;
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    paused(overrides?: CallOverrides): Promise<[boolean]>;
 
     product(overrides?: CallOverrides): Promise<[string]>;
 
@@ -314,10 +308,6 @@ export class Market extends BaseContract {
     removeBid(
       tokenId_: BigNumberish,
       bidder_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -356,8 +346,7 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber]>;
 
-    transferOwnership(
-      newOwner: string,
+    unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
@@ -423,7 +412,11 @@ export class Market extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
-  owner(overrides?: CallOverrides): Promise<string>;
+  pause(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  paused(overrides?: CallOverrides): Promise<boolean>;
 
   product(overrides?: CallOverrides): Promise<string>;
 
@@ -435,10 +428,6 @@ export class Market extends BaseContract {
   removeBid(
     tokenId_: BigNumberish,
     bidder_: string,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
-  renounceOwnership(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -477,8 +466,7 @@ export class Market extends BaseContract {
     overrides?: CallOverrides
   ): Promise<BigNumber>;
 
-  transferOwnership(
-    newOwner: string,
+  unpause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -550,7 +538,9 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
-    owner(overrides?: CallOverrides): Promise<string>;
+    pause(overrides?: CallOverrides): Promise<void>;
+
+    paused(overrides?: CallOverrides): Promise<boolean>;
 
     product(overrides?: CallOverrides): Promise<string>;
 
@@ -561,8 +551,6 @@ export class Market extends BaseContract {
       bidder_: string,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    renounceOwnership(overrides?: CallOverrides): Promise<void>;
 
     setAsk(
       tokenId_: BigNumberish,
@@ -599,44 +587,41 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: string,
-      overrides?: CallOverrides
-    ): Promise<void>;
+    unpause(overrides?: CallOverrides): Promise<void>;
   };
 
   filters: {
     AskCreated(
-      tokenId?: BigNumberish | null,
-      ask?: null
+      tokenId_?: BigNumberish | null,
+      ask_?: null
     ): TypedEventFilter<
       [
         BigNumber,
         [BigNumber, string] & { amount: BigNumber; currency: string }
       ],
       {
-        tokenId: BigNumber;
-        ask: [BigNumber, string] & { amount: BigNumber; currency: string };
+        tokenId_: BigNumber;
+        ask_: [BigNumber, string] & { amount: BigNumber; currency: string };
       }
     >;
 
     AskRemoved(
-      tokenId?: BigNumberish | null,
-      ask?: null
+      tokenId_?: BigNumberish | null,
+      ask_?: null
     ): TypedEventFilter<
       [
         BigNumber,
         [BigNumber, string] & { amount: BigNumber; currency: string }
       ],
       {
-        tokenId: BigNumber;
-        ask: [BigNumber, string] & { amount: BigNumber; currency: string };
+        tokenId_: BigNumber;
+        ask_: [BigNumber, string] & { amount: BigNumber; currency: string };
       }
     >;
 
     BidCreated(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -655,8 +640,8 @@ export class Market extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -673,8 +658,8 @@ export class Market extends BaseContract {
     >;
 
     BidFinalized(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -693,8 +678,8 @@ export class Market extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -711,8 +696,8 @@ export class Market extends BaseContract {
     >;
 
     BidRemoved(
-      tokenId?: BigNumberish | null,
-      bid?: null
+      tokenId_?: BigNumberish | null,
+      bid_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -731,8 +716,8 @@ export class Market extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bid: [
+        tokenId_: BigNumber;
+        bid_: [
           BigNumber,
           string,
           string,
@@ -749,8 +734,8 @@ export class Market extends BaseContract {
     >;
 
     BidShareUpdated(
-      tokenId?: BigNumberish | null,
-      bidShares?: null
+      tokenId_?: BigNumberish | null,
+      bidShares_?: null
     ): TypedEventFilter<
       [
         BigNumber,
@@ -765,8 +750,8 @@ export class Market extends BaseContract {
         }
       ],
       {
-        tokenId: BigNumber;
-        bidShares: [
+        tokenId_: BigNumber;
+        bidShares_: [
           [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber }
@@ -778,13 +763,9 @@ export class Market extends BaseContract {
       }
     >;
 
-    OwnershipTransferred(
-      previousOwner?: string | null,
-      newOwner?: string | null
-    ): TypedEventFilter<
-      [string, string],
-      { previousOwner: string; newOwner: string }
-    >;
+    Paused(account?: null): TypedEventFilter<[string], { account: string }>;
+
+    Unpaused(account?: null): TypedEventFilter<[string], { account: string }>;
   };
 
   estimateGas: {
@@ -831,7 +812,11 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    owner(overrides?: CallOverrides): Promise<BigNumber>;
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    paused(overrides?: CallOverrides): Promise<BigNumber>;
 
     product(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -843,10 +828,6 @@ export class Market extends BaseContract {
     removeBid(
       tokenId_: BigNumberish,
       bidder_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -885,8 +866,7 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    transferOwnership(
-      newOwner: string,
+    unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -935,7 +915,11 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    owner(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+    pause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     product(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
@@ -947,10 +931,6 @@ export class Market extends BaseContract {
     removeBid(
       tokenId_: BigNumberish,
       bidder_: string,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    renounceOwnership(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -989,8 +969,7 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
-    transferOwnership(
-      newOwner: string,
+    unpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };

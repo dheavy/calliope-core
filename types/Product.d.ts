@@ -28,7 +28,7 @@ interface ProductInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
-    "creators(uint256)": FunctionFragment;
+    "creator()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
@@ -36,6 +36,8 @@ interface ProductInterface extends ethers.utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "lend(uint256)": FunctionFragment;
+    "lendings(uint256)": FunctionFragment;
     "markets(uint256)": FunctionFragment;
     "mint(string,tuple)": FunctionFragment;
     "name()": FunctionFragment;
@@ -43,6 +45,7 @@ interface ProductInterface extends ethers.utils.Interface {
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
     "previousOwners(uint256)": FunctionFragment;
+    "recover(uint256)": FunctionFragment;
     "removeAsk(uint256)": FunctionFragment;
     "removeBid(uint256)": FunctionFragment;
     "renounceRole(bytes32,address)": FunctionFragment;
@@ -96,10 +99,7 @@ interface ProductInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
-  encodeFunctionData(
-    functionFragment: "creators",
-    values: [BigNumberish]
-  ): string;
+  encodeFunctionData(functionFragment: "creator", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -128,6 +128,11 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     values: [string, string]
   ): string;
+  encodeFunctionData(functionFragment: "lend", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "lendings",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(
     functionFragment: "markets",
     values: [BigNumberish]
@@ -152,6 +157,10 @@ interface ProductInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "previousOwners",
+    values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "recover",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
@@ -251,7 +260,7 @@ interface ProductInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "creators", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -274,6 +283,8 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "lend", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lendings", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "markets", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
@@ -284,6 +295,7 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "previousOwners",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "recover", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
   decodeFunctionResult(
@@ -435,7 +447,7 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    creators(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    creator(overrides?: CallOverrides): Promise<[string]>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -473,6 +485,13 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<[boolean]>;
+
     markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
 
     mint(
@@ -502,6 +521,11 @@ export class Product extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
+
+    recover(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     removeAsk(
       tokenId_: BigNumberish,
@@ -648,7 +672,7 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  creators(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  creator(overrides?: CallOverrides): Promise<string>;
 
   getApproved(
     tokenId: BigNumberish,
@@ -686,6 +710,13 @@ export class Product extends BaseContract {
     overrides?: CallOverrides
   ): Promise<boolean>;
 
+  lend(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
   markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   mint(
@@ -712,6 +743,11 @@ export class Product extends BaseContract {
     arg0: BigNumberish,
     overrides?: CallOverrides
   ): Promise<string>;
+
+  recover(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   removeAsk(
     tokenId_: BigNumberish,
@@ -852,7 +888,7 @@ export class Product extends BaseContract {
 
     burn(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    creators(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    creator(overrides?: CallOverrides): Promise<string>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -890,6 +926,10 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<boolean>;
 
+    lend(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+
     markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     mint(
@@ -914,6 +954,8 @@ export class Product extends BaseContract {
       arg0: BigNumberish,
       overrides?: CallOverrides
     ): Promise<string>;
+
+    recover(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     removeAsk(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -1131,7 +1173,7 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    creators(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    creator(overrides?: CallOverrides): Promise<BigNumber>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1172,6 +1214,13 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+
     markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
 
     mint(
@@ -1200,6 +1249,11 @@ export class Product extends BaseContract {
     previousOwners(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    recover(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     removeAsk(
@@ -1353,10 +1407,7 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    creators(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
+    creator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1397,6 +1448,16 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    lendings(
+      arg0: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     markets(
       arg0: BigNumberish,
       overrides?: CallOverrides
@@ -1428,6 +1489,11 @@ export class Product extends BaseContract {
     previousOwners(
       arg0: BigNumberish,
       overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    recover(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     removeAsk(

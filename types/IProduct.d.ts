@@ -22,7 +22,9 @@ import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 interface IProductInterface extends ethers.utils.Interface {
   functions: {
     "acceptBid(uint256,tuple)": FunctionFragment;
+    "lend(uint256)": FunctionFragment;
     "mint(string,tuple)": FunctionFragment;
+    "recover(uint256)": FunctionFragment;
     "removeAsk(uint256)": FunctionFragment;
     "removeBid(uint256)": FunctionFragment;
     "setAsk(uint256,tuple)": FunctionFragment;
@@ -44,6 +46,7 @@ interface IProductInterface extends ethers.utils.Interface {
       }
     ]
   ): string;
+  encodeFunctionData(functionFragment: "lend", values: [BigNumberish]): string;
   encodeFunctionData(
     functionFragment: "mint",
     values: [
@@ -54,6 +57,10 @@ interface IProductInterface extends ethers.utils.Interface {
         owner: { value: BigNumberish };
       }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "recover",
+    values: [BigNumberish]
   ): string;
   encodeFunctionData(
     functionFragment: "removeAsk",
@@ -90,7 +97,9 @@ interface IProductInterface extends ethers.utils.Interface {
   ): string;
 
   decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "lend", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "recover", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setAsk", data: BytesLike): Result;
@@ -169,6 +178,11 @@ export class IProduct extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     mint(
       baseTokenURI_: string,
       bidShares_: {
@@ -176,6 +190,11 @@ export class IProduct extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    recover(
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -232,6 +251,11 @@ export class IProduct extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  lend(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   mint(
     baseTokenURI_: string,
     bidShares_: {
@@ -239,6 +263,11 @@ export class IProduct extends BaseContract {
       creator: { value: BigNumberish };
       owner: { value: BigNumberish };
     },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  recover(
+    tokenId_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -295,6 +324,8 @@ export class IProduct extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    lend(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
     mint(
       baseTokenURI_: string,
       bidShares_: {
@@ -304,6 +335,8 @@ export class IProduct extends BaseContract {
       },
       overrides?: CallOverrides
     ): Promise<void>;
+
+    recover(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     removeAsk(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -373,6 +406,11 @@ export class IProduct extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     mint(
       baseTokenURI_: string,
       bidShares_: {
@@ -380,6 +418,11 @@ export class IProduct extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    recover(
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -437,6 +480,11 @@ export class IProduct extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    lend(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     mint(
       baseTokenURI_: string,
       bidShares_: {
@@ -444,6 +492,11 @@ export class IProduct extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    recover(
+      tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
