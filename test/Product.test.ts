@@ -18,8 +18,6 @@ import {
 use(asPromised);
 
 const chance = new Chance();
-let ProductFactory: ContractFactory;
-let StringUtilsFactory: ContractFactory;
 
 describe('Product', () => {
   type ProductDataStruct = {
@@ -27,10 +25,12 @@ describe('Product', () => {
     symbol: string;
     sku: string;
   };
+  let ProductFactory: ContractFactory;
+  let StringUtilsFactory: ContractFactory;
   let productData: ProductDataStruct;
   let product: Contract;
-  let StringUtils: Contract;
-  let MockStringUtils: MockContract;
+  let stringUtils: Contract;
+  let mockStringUtils: MockContract;
   let sku: string;
   let name: string;
   let symbol: string;
@@ -40,17 +40,16 @@ describe('Product', () => {
     signers = await ethers.getSigners();
 
     StringUtilsFactory = await ethers.getContractFactory('StringUtils', signers[0]);
-    StringUtils = await StringUtilsFactory.deploy();
-
-    MockStringUtils = await smockit(StringUtils);
-    MockStringUtils.smocked.isEmptyString.will.return.with((str: string) => str === '');
+    stringUtils = await StringUtilsFactory.deploy();
+    mockStringUtils = await smockit(stringUtils);
+    mockStringUtils.smocked.isEmptyString.will.return.with((str: string) => str === '');
 
     ProductFactory = await ethers.getContractFactory(
       'Product',
       {
         signer: signers[0],
         libraries: {
-          StringUtils: MockStringUtils.address
+          StringUtils: mockStringUtils.address
         }
       }
     );
@@ -81,12 +80,12 @@ describe('Product', () => {
       expect(product.symbol).to.exist;
       await expect(product.symbol()).to.eventually.eq(symbol);
     });
-    it('should revert if "sku" is missing in the constructor', async () => {
+    it('should revert if "sku" is missing in ProductData struct the constructor', async () => {
       await expect(ProductFactory.deploy({ name, symbol, sku: null }, 1))
         .to.eventually.be.rejectedWith("Cannot read property 'length' of null");
     });
 
-    it('should revert if "sku" is not a string in the constructor', async () => {
+    it('should revert if "sku" is not a string in ProductData struct in the constructor', async () => {
       await expect(ProductFactory.deploy({ name, symbol, sku: [] }, 1))
         .to.eventually.be.rejectedWith('Product: sku cannot be an empty string');
 
