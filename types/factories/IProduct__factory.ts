@@ -86,18 +86,6 @@ const _abi = [
             name: "recipient",
             type: "address",
           },
-          {
-            components: [
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Decimal.D256",
-            name: "sellOnShare",
-            type: "tuple",
-          },
         ],
         internalType: "struct IMarket.Bid",
         name: "bid_",
@@ -107,6 +95,19 @@ const _abi = [
     name: "acceptBid",
     outputs: [],
     stateMutability: "nonpayable",
+    type: "function",
+  },
+  {
+    inputs: [],
+    name: "creator",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
@@ -131,18 +132,6 @@ const _abi = [
       },
       {
         components: [
-          {
-            components: [
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Decimal.D256",
-            name: "previousOwner",
-            type: "tuple",
-          },
           {
             components: [
               {
@@ -275,18 +264,6 @@ const _abi = [
             internalType: "address",
             name: "recipient",
             type: "address",
-          },
-          {
-            components: [
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Decimal.D256",
-            name: "sellOnShare",
-            type: "tuple",
           },
         ],
         internalType: "struct IMarket.Bid",

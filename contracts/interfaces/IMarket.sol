@@ -9,7 +9,6 @@ interface IMarket {
         address currency;
         address bidder;
         address recipient;
-        Decimal.D256 sellOnShare;
     }
 
     struct Ask {
@@ -18,9 +17,13 @@ interface IMarket {
     }
 
     struct BidShares {
-        Decimal.D256 previousOwner;
         Decimal.D256 creator;
         Decimal.D256 owner;
+    }
+
+    struct Fee {
+        Decimal.D256 percent;
+        address recipient;
     }
 
     event BidCreated(uint256 indexed tokenId_, Bid bid_);
@@ -110,4 +113,9 @@ interface IMarket {
         external
         pure
         returns (uint256);
+
+    function fee()
+        external
+        view
+        returns (Fee memory);
 }

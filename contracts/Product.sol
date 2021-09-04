@@ -13,6 +13,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "hardhat/console.sol";
 import "./interfaces/IProduct.sol";
 import "./lib/StringUtils.sol";
+import "./lib/Decimal.sol";
 import "./Market.sol";
 
 contract Product is
@@ -27,6 +28,7 @@ contract Product is
     using Strings for uint256;
     using Counters for Counters.Counter;
 
+    bytes32 public constant PRODUCT_OWNER_ROLE = keccak256("PRODUCT_OWNER_ROLE");
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant PAUSER_ROLE = keccak256("PAUSER_ROLE");
 
@@ -34,20 +36,16 @@ contract Product is
     // (each token is linked to its own Market).
     mapping (uint256 => address) public markets;
 
-    // Mapping of token IDs to address of previous owner
-    // (when transfering ownership, we need a reference to the previous owners
-    // to distribute their share of the bid).
-    mapping(uint256 => address) public previousOwners;
-
     mapping(uint256 => bool) public lendings;
 
-    address public creator;
 
     string public sku;
 
     uint16 public totalStock;
 
     Counters.Counter internal _tokenIdTracker;
+    mapping(uint256 => address) internal _previousOwner;
+    address internal _creator;
 
     modifier onlyApprovedOrOwner(
         address spender,
@@ -89,9 +87,10 @@ contract Product is
 
         totalStock = totalStock_;
         sku = product_.sku;
-        creator = _msgSender();
+        _creator = _msgSender();
 
         _setupRole(DEFAULT_ADMIN_ROLE, _msgSender());
+        _setupRole(PRODUCT_OWNER_ROLE, _msgSender());
         _setupRole(MINTER_ROLE, _msgSender());
         _setupRole(PAUSER_ROLE, _msgSender());
     }
@@ -145,7 +144,7 @@ contract Product is
             string(abi.encodePacked(baseTokenURI_, currentTokenId.toString()))
         );
         _tokenIdTracker.increment();
-        previousOwners[currentTokenId] = _msgSender();
+        _previousOwner[currentTokenId] = _msgSender();
         IMarket(markets[currentTokenId]).setBidShares(currentTokenId, bidShares_);
     }
 
@@ -225,7 +224,7 @@ contract Product is
         onlyExistingToken(tokenId_)
         onlyApprovedOrOwner(msg.sender, tokenId_)
     {
-        previousOwners[tokenId_] = ownerOf(tokenId_);
+        _previousOwner[tokenId_] = ownerOf(tokenId_);
         _safeTransfer(ownerOf(tokenId_), to_, tokenId_, "");
     }
 
@@ -313,6 +312,15 @@ contract Product is
         Market(markets[tokenId_]).unpause();
     }
 
+    function creator()
+        view
+        public
+        override
+        returns (address)
+    {
+        return _creator;
+    }
+
     function _createMarket(
         address owner_,
         uint256 tokenId_
@@ -323,7 +331,8 @@ contract Product is
             markets[tokenId_] == address(0),
             "Product: Market exists"
         );
-        markets[tokenId_] = address(new Market(address(this), owner_));
+        IMarket.Fee memory fee = IMarket.Fee({ percent: Decimal.D256({ value: 0 }), recipient: address(0) });
+        markets[tokenId_] = address(new Market(address(this), owner_, fee));
     }
 
     function _beforeTokenTransfer(

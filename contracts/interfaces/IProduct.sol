@@ -4,6 +4,13 @@ pragma solidity ^0.8.4;
 import "./IMarket.sol";
 
 interface IProduct {
+    struct Signature {
+        uint256 deadline;
+        uint8 v;
+        bytes32 r;
+        bytes32 s;
+    }
+
     struct ProductData {
         string name;
         string symbol;
@@ -68,4 +75,9 @@ interface IProduct {
         uint256 tokenId_
     )
         external;
+
+    function creator()
+        view
+        external
+        returns (address);
 }

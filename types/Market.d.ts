@@ -25,6 +25,7 @@ interface MarketInterface extends ethers.utils.Interface {
     "areValidBidShares(tuple)": FunctionFragment;
     "bidSharesForToken(uint256)": FunctionFragment;
     "currentAskForToken(uint256)": FunctionFragment;
+    "fee()": FunctionFragment;
     "getBidFromBidder(uint256,address)": FunctionFragment;
     "isValidBid(uint256,uint256)": FunctionFragment;
     "pause()": FunctionFragment;
@@ -48,18 +49,13 @@ interface MarketInterface extends ethers.utils.Interface {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       }
     ]
   ): string;
   encodeFunctionData(
     functionFragment: "areValidBidShares",
     values: [
-      {
-        previousOwner: { value: BigNumberish };
-        creator: { value: BigNumberish };
-        owner: { value: BigNumberish };
-      }
+      { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
     ]
   ): string;
   encodeFunctionData(
@@ -70,6 +66,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "currentAskForToken",
     values: [BigNumberish]
   ): string;
+  encodeFunctionData(functionFragment: "fee", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getBidFromBidder",
     values: [BigNumberish, string]
@@ -102,7 +99,6 @@ interface MarketInterface extends ethers.utils.Interface {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       string
     ]
@@ -111,11 +107,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "setBidShares",
     values: [
       BigNumberish,
-      {
-        previousOwner: { value: BigNumberish };
-        creator: { value: BigNumberish };
-        owner: { value: BigNumberish };
-      }
+      { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
     ]
   ): string;
   encodeFunctionData(
@@ -137,6 +129,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "currentAskForToken",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getBidFromBidder",
     data: BytesLike
@@ -228,14 +221,12 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
     areValidBidShares(
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -249,10 +240,8 @@ export class Market extends BaseContract {
       [
         [
           [BigNumber] & { value: BigNumber },
-          [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber }
         ] & {
-          previousOwner: [BigNumber] & { value: BigNumber };
           creator: [BigNumber] & { value: BigNumber };
           owner: [BigNumber] & { value: BigNumber };
         }
@@ -264,24 +253,28 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[[BigNumber, string] & { amount: BigNumber; currency: string }]>;
 
+    fee(
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [[BigNumber] & { value: BigNumber }, string] & {
+          percent: [BigNumber] & { value: BigNumber };
+          recipient: string;
+        }
+      ]
+    >;
+
     getBidFromBidder(
       tokenId_: BigNumberish,
       bidder_: string,
       overrides?: CallOverrides
     ): Promise<
       [
-        [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         }
       ]
     >;
@@ -324,7 +317,6 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -333,7 +325,6 @@ export class Market extends BaseContract {
     setBidShares(
       tokenId_: BigNumberish,
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -358,14 +349,12 @@ export class Market extends BaseContract {
       currency: string;
       bidder: string;
       recipient: string;
-      sellOnShare: { value: BigNumberish };
     },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   areValidBidShares(
     bidShares_: {
-      previousOwner: { value: BigNumberish };
       creator: { value: BigNumberish };
       owner: { value: BigNumberish };
     },
@@ -376,12 +365,7 @@ export class Market extends BaseContract {
     tokenId_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<
-    [
-      [BigNumber] & { value: BigNumber },
-      [BigNumber] & { value: BigNumber },
-      [BigNumber] & { value: BigNumber }
-    ] & {
-      previousOwner: [BigNumber] & { value: BigNumber };
+    [[BigNumber] & { value: BigNumber }, [BigNumber] & { value: BigNumber }] & {
       creator: [BigNumber] & { value: BigNumber };
       owner: [BigNumber] & { value: BigNumber };
     }
@@ -392,17 +376,25 @@ export class Market extends BaseContract {
     overrides?: CallOverrides
   ): Promise<[BigNumber, string] & { amount: BigNumber; currency: string }>;
 
+  fee(
+    overrides?: CallOverrides
+  ): Promise<
+    [[BigNumber] & { value: BigNumber }, string] & {
+      percent: [BigNumber] & { value: BigNumber };
+      recipient: string;
+    }
+  >;
+
   getBidFromBidder(
     tokenId_: BigNumberish,
     bidder_: string,
     overrides?: CallOverrides
   ): Promise<
-    [BigNumber, string, string, string, [BigNumber] & { value: BigNumber }] & {
+    [BigNumber, string, string, string] & {
       amount: BigNumber;
       currency: string;
       bidder: string;
       recipient: string;
-      sellOnShare: [BigNumber] & { value: BigNumber };
     }
   >;
 
@@ -444,7 +436,6 @@ export class Market extends BaseContract {
       currency: string;
       bidder: string;
       recipient: string;
-      sellOnShare: { value: BigNumberish };
     },
     from_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -453,7 +444,6 @@ export class Market extends BaseContract {
   setBidShares(
     tokenId_: BigNumberish,
     bidShares_: {
-      previousOwner: { value: BigNumberish };
       creator: { value: BigNumberish };
       owner: { value: BigNumberish };
     },
@@ -478,14 +468,12 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       overrides?: CallOverrides
     ): Promise<void>;
 
     areValidBidShares(
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -498,10 +486,8 @@ export class Market extends BaseContract {
     ): Promise<
       [
         [BigNumber] & { value: BigNumber },
-        [BigNumber] & { value: BigNumber },
         [BigNumber] & { value: BigNumber }
       ] & {
-        previousOwner: [BigNumber] & { value: BigNumber };
         creator: [BigNumber] & { value: BigNumber };
         owner: [BigNumber] & { value: BigNumber };
       }
@@ -512,23 +498,25 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<[BigNumber, string] & { amount: BigNumber; currency: string }>;
 
+    fee(
+      overrides?: CallOverrides
+    ): Promise<
+      [[BigNumber] & { value: BigNumber }, string] & {
+        percent: [BigNumber] & { value: BigNumber };
+        recipient: string;
+      }
+    >;
+
     getBidFromBidder(
       tokenId_: BigNumberish,
       bidder_: string,
       overrides?: CallOverrides
     ): Promise<
-      [
-        BigNumber,
-        string,
-        string,
-        string,
-        [BigNumber] & { value: BigNumber }
-      ] & {
+      [BigNumber, string, string, string] & {
         amount: BigNumber;
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: [BigNumber] & { value: BigNumber };
       }
     >;
 
@@ -565,7 +553,6 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       from_: string,
       overrides?: CallOverrides
@@ -574,7 +561,6 @@ export class Market extends BaseContract {
     setBidShares(
       tokenId_: BigNumberish,
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -625,34 +611,20 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        bid_: [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         };
       }
     >;
@@ -663,34 +635,20 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        bid_: [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         };
       }
     >;
@@ -701,34 +659,20 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [
-          BigNumber,
-          string,
-          string,
-          string,
-          [BigNumber] & { value: BigNumber }
-        ] & {
+        bid_: [BigNumber, string, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
           recipient: string;
-          sellOnShare: [BigNumber] & { value: BigNumber };
         };
       }
     >;
@@ -741,10 +685,8 @@ export class Market extends BaseContract {
         BigNumber,
         [
           [BigNumber] & { value: BigNumber },
-          [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber }
         ] & {
-          previousOwner: [BigNumber] & { value: BigNumber };
           creator: [BigNumber] & { value: BigNumber };
           owner: [BigNumber] & { value: BigNumber };
         }
@@ -753,10 +695,8 @@ export class Market extends BaseContract {
         tokenId_: BigNumber;
         bidShares_: [
           [BigNumber] & { value: BigNumber },
-          [BigNumber] & { value: BigNumber },
           [BigNumber] & { value: BigNumber }
         ] & {
-          previousOwner: [BigNumber] & { value: BigNumber };
           creator: [BigNumber] & { value: BigNumber };
           owner: [BigNumber] & { value: BigNumber };
         };
@@ -776,14 +716,12 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
     areValidBidShares(
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -799,6 +737,8 @@ export class Market extends BaseContract {
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
+
+    fee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getBidFromBidder(
       tokenId_: BigNumberish,
@@ -844,7 +784,6 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -853,7 +792,6 @@ export class Market extends BaseContract {
     setBidShares(
       tokenId_: BigNumberish,
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -879,14 +817,12 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     areValidBidShares(
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
@@ -902,6 +838,8 @@ export class Market extends BaseContract {
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
+
+    fee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getBidFromBidder(
       tokenId_: BigNumberish,
@@ -947,7 +885,6 @@ export class Market extends BaseContract {
         currency: string;
         bidder: string;
         recipient: string;
-        sellOnShare: { value: BigNumberish };
       },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -956,7 +893,6 @@ export class Market extends BaseContract {
     setBidShares(
       tokenId_: BigNumberish,
       bidShares_: {
-        previousOwner: { value: BigNumberish };
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },

@@ -5,7 +5,8 @@ import "@openzeppelin/contracts/token/ERC721/IERC721.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/security/Pausable.sol";
 import "./interfaces/IMarket.sol";
-import "./Product.sol";
+import "./interfaces/IProduct.sol";
+import "hardhat/console.sol";
 
 contract Market is
     IMarket,
@@ -26,9 +27,11 @@ contract Market is
     // Mapping of token IDs to their current auction Asks.
     mapping(uint256 => Ask) private _asks;
 
+    Fee private _fee;
+
     modifier onlyProduct() {
         require(
-            msg.sender == product,
+            _msgSender() == product,
             "Market: Product call only"
         );
         _;
@@ -36,10 +39,18 @@ contract Market is
 
     constructor(
         address product_,
-        address currency_
+        address currency_,
+        Fee memory fee_
     ) {
+        if (fee_.percent.value != 0) {
+            require(
+                fee_.recipient != address(0),
+                "Market: invalid fee recipient address"
+            );
+        }
         product = product_;
         _currency = currency_;
+        _fee = fee_;
     }
 
     function setAsk(
@@ -78,12 +89,6 @@ contract Market is
         override
         onlyProduct
     {
-        BidShares memory bidShares = _bidShares[tokenId_];
-
-        require(
-            bidShares.creator.value + bid_.sellOnShare.value <= uint256(100) * Decimal.BASE,
-            "Market: invalid sell-on fee for share-splitting"
-        );
         require(
             bid_.bidder != address(0),
             "Market: invalid bidder"
@@ -125,8 +130,7 @@ contract Market is
             balanceAfter - balanceBefore,
             bid_.currency,
             bid_.bidder,
-            bid_.recipient,
-            bid_.sellOnShare
+            bid_.recipient
         );
         emit BidCreated(tokenId_, bid_);
 
@@ -177,7 +181,6 @@ contract Market is
         require(
             bid.amount == expectedBid_.amount &&
             bid.currency == expectedBid_.currency &&
-            bid.sellOnShare.value == expectedBid_.sellOnShare.value &&
             bid.recipient == expectedBid_.recipient,
             "Market: unexpected bid"
         );
@@ -256,7 +259,6 @@ contract Market is
 
         return bidAmount_ != 0 &&
             bidAmount_ == splitShare(bidShares.creator, bidAmount_)
-                + splitShare(bidShares.previousOwner, bidAmount_)
                 + splitShare(bidShares.owner, bidAmount_);
     }
 
@@ -268,9 +270,8 @@ contract Market is
         override
         returns (bool)
     {
-        return bidShares_.creator.value +
-            bidShares_.owner.value +
-            bidShares_.previousOwner.value == uint256(100) * Decimal.BASE;
+        return bidShares_.creator.value
+            + bidShares_.owner.value == uint256(100) * Decimal.BASE;
     }
 
     function splitShare(
@@ -301,6 +302,15 @@ contract Market is
         _unpause();
     }
 
+    function fee()
+        external
+        view
+        override
+        returns (Fee memory)
+    {
+        return _fee;
+    }
+
     function _canAcceptBidAutomatically(
         uint256 tokenId_,
         Bid calldata bid_
@@ -322,10 +332,9 @@ contract Market is
     {
         Bid memory bid = _bidders[tokenId_][bidder_];
         BidShares storage bidShares = _bidShares[tokenId_];
-
         IERC20 token = IERC20(bid.currency);
 
-        // Transfer bid share to current Product owner.
+        // Transfer bid share to seller.
         token.transfer(
             IERC721(product).ownerOf(tokenId_),
             splitShare(bidShares.owner, bid.amount)
@@ -333,28 +342,19 @@ contract Market is
 
         // Transfer bid share to Product creator.
         token.transfer(
-            Product(product).creator(),
+            IProduct(product).creator(),
             splitShare(bidShares.creator, bid.amount)
         );
 
-        // Transfer media to bid recipient.
-        Product(product).transferAfterAuction(tokenId_, bid.recipient);
+        // TODO: implement fee fees
 
-        // Calculate bid share for new owner.
-        // Equals (100 - creatorShare - sellOnShare).
-        bidShares.owner = Decimal.D256(
-            (uint(100) * Decimal.BASE)
-            - _bidShares[tokenId_].creator.value
-            - bid.sellOnShare.value
-        );
+        // // Transfer media to bid recipient.
+        // Product(product).transferAfterAuction(tokenId_, bid.recipient);
 
-        // Set previous owner share (== accepted bid's sell-on fee)
-        bidShares.previousOwner = bid.sellOnShare;
+        // // Remove accepted bid.
+        // delete _bidders[tokenId_][bidder_];
 
-        // Remove accepted bid.
-        delete _bidders[tokenId_][bidder_];
-
-        emit BidShareUpdated(tokenId_, bidShares);
-        emit BidFinalized(tokenId_, bid);
+        // emit BidShareUpdated(tokenId_, bidShares);
+        // emit BidFinalized(tokenId_, bid);
     }
 }

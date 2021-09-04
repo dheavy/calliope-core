@@ -19,16 +19,13 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface ProductInterface extends ethers.utils.Interface {
+interface TestMarketProxyInterface extends ethers.utils.Interface {
   functions: {
     "DEFAULT_ADMIN_ROLE()": FunctionFragment;
-    "MINTER_ROLE()": FunctionFragment;
-    "PAUSER_ROLE()": FunctionFragment;
     "PRODUCT_OWNER_ROLE()": FunctionFragment;
     "acceptBid(uint256,tuple)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "burn(uint256)": FunctionFragment;
     "creator()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -38,13 +35,15 @@ interface ProductInterface extends ethers.utils.Interface {
     "hasRole(bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
     "lend(uint256)": FunctionFragment;
-    "lendings(uint256)": FunctionFragment;
-    "markets(uint256)": FunctionFragment;
+    "market()": FunctionFragment;
+    "marketRemoveAsk(uint256)": FunctionFragment;
+    "marketSetAsk(uint256,tuple)": FunctionFragment;
+    "marketSetBid(uint256,tuple,address)": FunctionFragment;
+    "marketSetBidShares(uint256,tuple)": FunctionFragment;
     "mint(string,tuple)": FunctionFragment;
+    "mintNFT(uint256)": FunctionFragment;
     "name()": FunctionFragment;
     "ownerOf(uint256)": FunctionFragment;
-    "pause()": FunctionFragment;
-    "paused()": FunctionFragment;
     "recover(uint256)": FunctionFragment;
     "removeAsk(uint256)": FunctionFragment;
     "removeBid(uint256)": FunctionFragment;
@@ -54,30 +53,16 @@ interface ProductInterface extends ethers.utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setAsk(uint256,tuple)": FunctionFragment;
     "setBid(uint256,tuple)": FunctionFragment;
-    "sku()": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
-    "tokenByIndex(uint256)": FunctionFragment;
-    "tokenOfOwnerByIndex(address,uint256)": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
-    "totalStock()": FunctionFragment;
-    "totalSupply()": FunctionFragment;
     "transferAfterAuction(uint256,address)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
-    "unpause()": FunctionFragment;
     "updateTokenURI(uint256,string)": FunctionFragment;
   };
 
   encodeFunctionData(
     functionFragment: "DEFAULT_ADMIN_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "MINTER_ROLE",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "PAUSER_ROLE",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -101,7 +86,6 @@ interface ProductInterface extends ethers.utils.Interface {
     values: [string, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -132,13 +116,34 @@ interface ProductInterface extends ethers.utils.Interface {
     values: [string, string]
   ): string;
   encodeFunctionData(functionFragment: "lend", values: [BigNumberish]): string;
+  encodeFunctionData(functionFragment: "market", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "lendings",
+    functionFragment: "marketRemoveAsk",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
-    functionFragment: "markets",
-    values: [BigNumberish]
+    functionFragment: "marketSetAsk",
+    values: [BigNumberish, { amount: BigNumberish; currency: string }]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "marketSetBid",
+    values: [
+      BigNumberish,
+      {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+      },
+      string
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "marketSetBidShares",
+    values: [
+      BigNumberish,
+      { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
+    ]
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
@@ -147,13 +152,15 @@ interface ProductInterface extends ethers.utils.Interface {
       { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
     ]
   ): string;
+  encodeFunctionData(
+    functionFragment: "mintNFT",
+    values: [BigNumberish]
+  ): string;
   encodeFunctionData(functionFragment: "name", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "ownerOf",
     values: [BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "pause", values?: undefined): string;
-  encodeFunctionData(functionFragment: "paused", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "recover",
     values: [BigNumberish]
@@ -198,31 +205,14 @@ interface ProductInterface extends ethers.utils.Interface {
       }
     ]
   ): string;
-  encodeFunctionData(functionFragment: "sku", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
   encodeFunctionData(
-    functionFragment: "tokenByIndex",
-    values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "tokenOfOwnerByIndex",
-    values: [string, BigNumberish]
-  ): string;
-  encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalStock",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "totalSupply",
-    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "transferAfterAuction",
@@ -232,7 +222,6 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     values: [string, string, BigNumberish]
   ): string;
-  encodeFunctionData(functionFragment: "unpause", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "updateTokenURI",
     values: [BigNumberish, string]
@@ -243,21 +232,12 @@ interface ProductInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
-    functionFragment: "MINTER_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "PAUSER_ROLE",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
     functionFragment: "PRODUCT_OWNER_ROLE",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -282,13 +262,27 @@ interface ProductInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "lend", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "lendings", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "markets", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "market", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "marketRemoveAsk",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "marketSetAsk",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "marketSetBid",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "marketSetBidShares",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "mintNFT", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "name", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "ownerOf", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "recover", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
@@ -307,26 +301,12 @@ interface ProductInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setBid", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "sku", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenByIndex",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "tokenOfOwnerByIndex",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
-  decodeFunctionResult(functionFragment: "totalStock", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "totalSupply",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(
     functionFragment: "transferAfterAuction",
     data: BytesLike
@@ -335,7 +315,6 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "transferFrom",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "unpause", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "updateTokenURI",
     data: BytesLike
@@ -344,29 +323,25 @@ interface ProductInterface extends ethers.utils.Interface {
   events: {
     "Approval(address,address,uint256)": EventFragment;
     "ApprovalForAll(address,address,bool)": EventFragment;
-    "Paused(address)": EventFragment;
     "RoleAdminChanged(bytes32,bytes32,bytes32)": EventFragment;
     "RoleGranted(bytes32,address,address)": EventFragment;
     "RoleRevoked(bytes32,address,address)": EventFragment;
     "TokenMetadataURIUpdated(uint256,address,string)": EventFragment;
     "TokenURIUpdated(uint256,address,string)": EventFragment;
     "Transfer(address,address,uint256)": EventFragment;
-    "Unpaused(address)": EventFragment;
   };
 
   getEvent(nameOrSignatureOrTopic: "Approval"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "ApprovalForAll"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Paused"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleAdminChanged"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleGranted"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "RoleRevoked"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenMetadataURIUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "TokenURIUpdated"): EventFragment;
   getEvent(nameOrSignatureOrTopic: "Transfer"): EventFragment;
-  getEvent(nameOrSignatureOrTopic: "Unpaused"): EventFragment;
 }
 
-export class Product extends BaseContract {
+export class TestMarketProxy extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -407,14 +382,10 @@ export class Product extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: ProductInterface;
+  interface: TestMarketProxyInterface;
 
   functions: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    MINTER_ROLE(overrides?: CallOverrides): Promise<[string]>;
-
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
     PRODUCT_OWNER_ROLE(overrides?: CallOverrides): Promise<[string]>;
 
@@ -436,11 +407,6 @@ export class Product extends BaseContract {
     ): Promise<ContractTransaction>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    burn(
-      tokenId_: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
 
     creator(overrides?: CallOverrides): Promise<[string]>;
 
@@ -485,9 +451,39 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<[boolean]>;
+    market(overrides?: CallOverrides): Promise<[string]>;
 
-    markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<[string]>;
+    marketRemoveAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    marketSetAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    marketSetBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+      },
+      from_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    marketSetBidShares(
+      tokenId_: BigNumberish,
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
 
     mint(
       baseTokenURI_: string,
@@ -498,18 +494,17 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    mintNFT(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     name(overrides?: CallOverrides): Promise<[string]>;
 
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    pause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
-    paused(overrides?: CallOverrides): Promise<[boolean]>;
 
     recover(
       tokenId_: BigNumberish,
@@ -567,7 +562,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
+      bid: {
         amount: BigNumberish;
         currency: string;
         bidder: string;
@@ -576,8 +571,6 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    sku(overrides?: CallOverrides): Promise<[string]>;
-
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -585,25 +578,10 @@ export class Product extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<[BigNumber]>;
-
     tokenURI(
-      tokenId_: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[string]>;
-
-    totalStock(overrides?: CallOverrides): Promise<[number]>;
-
-    totalSupply(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     transferAfterAuction(
       tokenId_: BigNumberish,
@@ -618,22 +596,14 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
-    unpause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<ContractTransaction>;
-
     updateTokenURI(
       tokenId_: BigNumberish,
-      baseTokenURI_: string,
+      tokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
   };
 
   DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-  PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
 
   PRODUCT_OWNER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -655,11 +625,6 @@ export class Product extends BaseContract {
   ): Promise<ContractTransaction>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-  burn(
-    tokenId_: BigNumberish,
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
 
   creator(overrides?: CallOverrides): Promise<string>;
 
@@ -704,9 +669,39 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+  market(overrides?: CallOverrides): Promise<string>;
 
-  markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+  marketRemoveAsk(
+    tokenId_: BigNumberish,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  marketSetAsk(
+    tokenId_: BigNumberish,
+    ask_: { amount: BigNumberish; currency: string },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  marketSetBid(
+    tokenId_: BigNumberish,
+    bid_: {
+      amount: BigNumberish;
+      currency: string;
+      bidder: string;
+      recipient: string;
+    },
+    from_: string,
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  marketSetBidShares(
+    tokenId_: BigNumberish,
+    bidShares_: {
+      creator: { value: BigNumberish };
+      owner: { value: BigNumberish };
+    },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
 
   mint(
     baseTokenURI_: string,
@@ -717,15 +712,14 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  name(overrides?: CallOverrides): Promise<string>;
-
-  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  pause(
+  mintNFT(
+    tokenId_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  paused(overrides?: CallOverrides): Promise<boolean>;
+  name(overrides?: CallOverrides): Promise<string>;
+
+  ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   recover(
     tokenId_: BigNumberish,
@@ -783,7 +777,7 @@ export class Product extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid_: {
+    bid: {
       amount: BigNumberish;
       currency: string;
       bidder: string;
@@ -792,8 +786,6 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  sku(overrides?: CallOverrides): Promise<string>;
-
   supportsInterface(
     interfaceId_: BytesLike,
     overrides?: CallOverrides
@@ -801,22 +793,7 @@ export class Product extends BaseContract {
 
   symbol(overrides?: CallOverrides): Promise<string>;
 
-  tokenByIndex(
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenOfOwnerByIndex(
-    owner: string,
-    index: BigNumberish,
-    overrides?: CallOverrides
-  ): Promise<BigNumber>;
-
-  tokenURI(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-  totalStock(overrides?: CallOverrides): Promise<number>;
-
-  totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+  tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
   transferAfterAuction(
     tokenId_: BigNumberish,
@@ -831,22 +808,14 @@ export class Product extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
-  unpause(
-    overrides?: Overrides & { from?: string | Promise<string> }
-  ): Promise<ContractTransaction>;
-
   updateTokenURI(
     tokenId_: BigNumberish,
-    baseTokenURI_: string,
+    tokenURI_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
   callStatic: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    MINTER_ROLE(overrides?: CallOverrides): Promise<string>;
-
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<string>;
 
     PRODUCT_OWNER_ROLE(overrides?: CallOverrides): Promise<string>;
 
@@ -868,8 +837,6 @@ export class Product extends BaseContract {
     ): Promise<void>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    burn(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
     creator(overrides?: CallOverrides): Promise<string>;
 
@@ -911,9 +878,39 @@ export class Product extends BaseContract {
 
     lend(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
-    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<boolean>;
+    market(overrides?: CallOverrides): Promise<string>;
 
-    markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<string>;
+    marketRemoveAsk(
+      tokenId_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    marketSetAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    marketSetBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+      },
+      from_: string,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    marketSetBidShares(
+      tokenId_: BigNumberish,
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     mint(
       baseTokenURI_: string,
@@ -924,13 +921,11 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    mintNFT(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
     name(overrides?: CallOverrides): Promise<string>;
 
     ownerOf(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
-
-    pause(overrides?: CallOverrides): Promise<void>;
-
-    paused(overrides?: CallOverrides): Promise<boolean>;
 
     recover(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
 
@@ -979,7 +974,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
+      bid: {
         amount: BigNumberish;
         currency: string;
         bidder: string;
@@ -988,8 +983,6 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    sku(overrides?: CallOverrides): Promise<string>;
-
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -997,25 +990,7 @@ export class Product extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<string>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenURI(
-      tokenId_: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<string>;
-
-    totalStock(overrides?: CallOverrides): Promise<number>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
+    tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
     transferAfterAuction(
       tokenId_: BigNumberish,
@@ -1030,11 +1005,9 @@ export class Product extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
-    unpause(overrides?: CallOverrides): Promise<void>;
-
     updateTokenURI(
       tokenId_: BigNumberish,
-      baseTokenURI_: string,
+      tokenURI_: string,
       overrides?: CallOverrides
     ): Promise<void>;
   };
@@ -1057,8 +1030,6 @@ export class Product extends BaseContract {
       [string, string, boolean],
       { owner: string; operator: string; approved: boolean }
     >;
-
-    Paused(account?: null): TypedEventFilter<[string], { account: string }>;
 
     RoleAdminChanged(
       role?: BytesLike | null,
@@ -1113,16 +1084,10 @@ export class Product extends BaseContract {
       [string, string, BigNumber],
       { from: string; to: string; tokenId: BigNumber }
     >;
-
-    Unpaused(account?: null): TypedEventFilter<[string], { account: string }>;
   };
 
   estimateGas: {
     DEFAULT_ADMIN_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    MINTER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
-
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
     PRODUCT_OWNER_ROLE(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1144,11 +1109,6 @@ export class Product extends BaseContract {
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    burn(
-      tokenId_: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
 
     creator(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1196,9 +1156,39 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    lendings(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    market(overrides?: CallOverrides): Promise<BigNumber>;
 
-    markets(arg0: BigNumberish, overrides?: CallOverrides): Promise<BigNumber>;
+    marketRemoveAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    marketSetAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    marketSetBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+      },
+      from_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    marketSetBidShares(
+      tokenId_: BigNumberish,
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
 
     mint(
       baseTokenURI_: string,
@@ -1209,18 +1199,17 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    mintNFT(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     name(overrides?: CallOverrides): Promise<BigNumber>;
 
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    pause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
-    paused(overrides?: CallOverrides): Promise<BigNumber>;
 
     recover(
       tokenId_: BigNumberish,
@@ -1278,7 +1267,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
+      bid: {
         amount: BigNumberish;
         currency: string;
         bidder: string;
@@ -1287,8 +1276,6 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    sku(overrides?: CallOverrides): Promise<BigNumber>;
-
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -1296,25 +1283,10 @@ export class Product extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     tokenURI(
-      tokenId_: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    totalStock(overrides?: CallOverrides): Promise<BigNumber>;
-
-    totalSupply(overrides?: CallOverrides): Promise<BigNumber>;
 
     transferAfterAuction(
       tokenId_: BigNumberish,
@@ -1329,13 +1301,9 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
-    unpause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<BigNumber>;
-
     updateTokenURI(
       tokenId_: BigNumberish,
-      baseTokenURI_: string,
+      tokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
   };
@@ -1344,10 +1312,6 @@ export class Product extends BaseContract {
     DEFAULT_ADMIN_ROLE(
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    MINTER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    PAUSER_ROLE(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     PRODUCT_OWNER_ROLE(
       overrides?: CallOverrides
@@ -1373,11 +1337,6 @@ export class Product extends BaseContract {
     balanceOf(
       owner: string,
       overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    burn(
-      tokenId_: BigNumberish,
-      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     creator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1426,14 +1385,38 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    lendings(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    market(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    marketRemoveAsk(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    markets(
-      arg0: BigNumberish,
-      overrides?: CallOverrides
+    marketSetAsk(
+      tokenId_: BigNumberish,
+      ask_: { amount: BigNumberish; currency: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    marketSetBid(
+      tokenId_: BigNumberish,
+      bid_: {
+        amount: BigNumberish;
+        currency: string;
+        bidder: string;
+        recipient: string;
+      },
+      from_: string,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    marketSetBidShares(
+      tokenId_: BigNumberish,
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
     mint(
@@ -1445,18 +1428,17 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    mintNFT(
+      tokenId_: BigNumberish,
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     name(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     ownerOf(
       tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    pause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
-    paused(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     recover(
       tokenId_: BigNumberish,
@@ -1514,7 +1496,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
+      bid: {
         amount: BigNumberish;
         currency: string;
         bidder: string;
@@ -1523,8 +1505,6 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    sku(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -1532,25 +1512,10 @@ export class Product extends BaseContract {
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
-    tokenByIndex(
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    tokenOfOwnerByIndex(
-      owner: string,
-      index: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
     tokenURI(
-      tokenId_: BigNumberish,
+      tokenId: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
-
-    totalStock(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    totalSupply(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     transferAfterAuction(
       tokenId_: BigNumberish,
@@ -1565,13 +1530,9 @@ export class Product extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
-    unpause(
-      overrides?: Overrides & { from?: string | Promise<string> }
-    ): Promise<PopulatedTransaction>;
-
     updateTokenURI(
       tokenId_: BigNumberish,
-      baseTokenURI_: string,
+      tokenURI_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
   };
