@@ -25,8 +25,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "PRODUCT_OWNER_ROLE()": FunctionFragment;
     "acceptBid(uint256,tuple)": FunctionFragment;
     "approve(address,uint256)": FunctionFragment;
+    "areValidBidShares(tuple)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "creator()": FunctionFragment;
+    "fee()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
     "getRoleMember(bytes32,uint256)": FunctionFragment;
@@ -34,6 +36,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "grantRole(bytes32,address)": FunctionFragment;
     "hasRole(bytes32,address)": FunctionFragment;
     "isApprovedForAll(address,address)": FunctionFragment;
+    "isValidBid(uint256,uint256)": FunctionFragment;
     "lend(uint256)": FunctionFragment;
     "market()": FunctionFragment;
     "marketRemoveAsk(uint256)": FunctionFragment;
@@ -53,6 +56,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "setApprovalForAll(address,bool)": FunctionFragment;
     "setAsk(uint256,tuple)": FunctionFragment;
     "setBid(uint256,tuple)": FunctionFragment;
+    "splitShare(tuple,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
@@ -85,8 +89,15 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     functionFragment: "approve",
     values: [string, BigNumberish]
   ): string;
+  encodeFunctionData(
+    functionFragment: "areValidBidShares",
+    values: [
+      { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
+    ]
+  ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
+  encodeFunctionData(functionFragment: "fee", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getApproved",
     values: [BigNumberish]
@@ -114,6 +125,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "isApprovedForAll",
     values: [string, string]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "isValidBid",
+    values: [BigNumberish, BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "lend", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "market", values?: undefined): string;
@@ -206,6 +221,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(
+    functionFragment: "splitShare",
+    values: [{ value: BigNumberish }, BigNumberish]
+  ): string;
+  encodeFunctionData(
     functionFragment: "supportsInterface",
     values: [BytesLike]
   ): string;
@@ -237,8 +256,13 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "acceptBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "areValidBidShares",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
     data: BytesLike
@@ -261,6 +285,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     functionFragment: "isApprovedForAll",
     data: BytesLike
   ): Result;
+  decodeFunctionResult(functionFragment: "isValidBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "lend", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "market", data: BytesLike): Result;
   decodeFunctionResult(
@@ -301,6 +326,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(functionFragment: "setAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "setBid", data: BytesLike): Result;
+  decodeFunctionResult(functionFragment: "splitShare", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "supportsInterface",
     data: BytesLike
@@ -406,9 +432,28 @@ export class TestMarketProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    areValidBidShares(
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
 
     creator(overrides?: CallOverrides): Promise<[string]>;
+
+    fee(
+      overrides?: CallOverrides
+    ): Promise<
+      [
+        [[BigNumber] & { value: BigNumber }, string] & {
+          percent: [BigNumber] & { value: BigNumber };
+          recipient: string;
+        }
+      ]
+    >;
 
     getApproved(
       tokenId: BigNumberish,
@@ -443,6 +488,12 @@ export class TestMarketProxy extends BaseContract {
     isApprovedForAll(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<[boolean]>;
+
+    isValidBid(
+      tokenId_: BigNumberish,
+      bidAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<[boolean]>;
 
@@ -571,6 +622,12 @@ export class TestMarketProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
+    splitShare(
+      sharePercent_: { value: BigNumberish },
+      amount_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<[BigNumber]>;
+
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -624,9 +681,26 @@ export class TestMarketProxy extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  areValidBidShares(
+    bidShares_: {
+      creator: { value: BigNumberish };
+      owner: { value: BigNumberish };
+    },
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
   creator(overrides?: CallOverrides): Promise<string>;
+
+  fee(
+    overrides?: CallOverrides
+  ): Promise<
+    [[BigNumber] & { value: BigNumber }, string] & {
+      percent: [BigNumber] & { value: BigNumber };
+      recipient: string;
+    }
+  >;
 
   getApproved(
     tokenId: BigNumberish,
@@ -661,6 +735,12 @@ export class TestMarketProxy extends BaseContract {
   isApprovedForAll(
     owner: string,
     operator: string,
+    overrides?: CallOverrides
+  ): Promise<boolean>;
+
+  isValidBid(
+    tokenId_: BigNumberish,
+    bidAmount_: BigNumberish,
     overrides?: CallOverrides
   ): Promise<boolean>;
 
@@ -786,6 +866,12 @@ export class TestMarketProxy extends BaseContract {
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
+  splitShare(
+    sharePercent_: { value: BigNumberish },
+    amount_: BigNumberish,
+    overrides?: CallOverrides
+  ): Promise<BigNumber>;
+
   supportsInterface(
     interfaceId_: BytesLike,
     overrides?: CallOverrides
@@ -836,9 +922,26 @@ export class TestMarketProxy extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    areValidBidShares(
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     creator(overrides?: CallOverrides): Promise<string>;
+
+    fee(
+      overrides?: CallOverrides
+    ): Promise<
+      [[BigNumber] & { value: BigNumber }, string] & {
+        percent: [BigNumber] & { value: BigNumber };
+        recipient: string;
+      }
+    >;
 
     getApproved(
       tokenId: BigNumberish,
@@ -873,6 +976,12 @@ export class TestMarketProxy extends BaseContract {
     isApprovedForAll(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<boolean>;
+
+    isValidBid(
+      tokenId_: BigNumberish,
+      bidAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<boolean>;
 
@@ -982,6 +1091,12 @@ export class TestMarketProxy extends BaseContract {
       },
       overrides?: CallOverrides
     ): Promise<void>;
+
+    splitShare(
+      sharePercent_: { value: BigNumberish },
+      amount_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     supportsInterface(
       interfaceId_: BytesLike,
@@ -1108,9 +1223,19 @@ export class TestMarketProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    areValidBidShares(
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     creator(overrides?: CallOverrides): Promise<BigNumber>;
+
+    fee(overrides?: CallOverrides): Promise<BigNumber>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1148,6 +1273,12 @@ export class TestMarketProxy extends BaseContract {
     isApprovedForAll(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
+    isValidBid(
+      tokenId_: BigNumberish,
+      bidAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
@@ -1276,6 +1407,12 @@ export class TestMarketProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
+    splitShare(
+      sharePercent_: { value: BigNumberish },
+      amount_: BigNumberish,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     supportsInterface(
       interfaceId_: BytesLike,
       overrides?: CallOverrides
@@ -1334,12 +1471,22 @@ export class TestMarketProxy extends BaseContract {
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
+    areValidBidShares(
+      bidShares_: {
+        creator: { value: BigNumberish };
+        owner: { value: BigNumberish };
+      },
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     balanceOf(
       owner: string,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     creator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    fee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     getApproved(
       tokenId: BigNumberish,
@@ -1377,6 +1524,12 @@ export class TestMarketProxy extends BaseContract {
     isApprovedForAll(
       owner: string,
       operator: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    isValidBid(
+      tokenId_: BigNumberish,
+      bidAmount_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1503,6 +1656,12 @@ export class TestMarketProxy extends BaseContract {
         recipient: string;
       },
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    splitShare(
+      sharePercent_: { value: BigNumberish },
+      amount_: BigNumberish,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     supportsInterface(

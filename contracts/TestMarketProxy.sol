@@ -6,7 +6,6 @@ import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "./interfaces/IMarket.sol";
 import "./interfaces/IProduct.sol";
 import "./Market.sol";
-import "hardhat/console.sol";
 
 /*
     TestMarketProxy is only to be used for TEST purposes.
@@ -79,6 +78,46 @@ contract TestMarketProxy is
         external
     {
         IMarket(market).removeAsk(tokenId_);
+    }
+
+    function areValidBidShares(
+        IMarket.BidShares memory bidShares_
+    )
+        public
+        view
+        returns (bool)
+    {
+        return IMarket(market).areValidBidShares(bidShares_);
+    }
+
+    function splitShare(
+        Decimal.D256 memory sharePercent_,
+        uint256 amount_
+    )
+        public
+        view
+        returns (uint256)
+    {
+        return IMarket(market).splitShare(sharePercent_, amount_);
+    }
+
+    function isValidBid(
+        uint256 tokenId_,
+        uint256 bidAmount_
+    )
+        public
+        view
+        returns (bool)
+    {
+        return IMarket(market).isValidBid(tokenId_, bidAmount_);
+    }
+
+    function fee()
+        external
+        view
+        returns (IMarket.Fee memory)
+    {
+        return IMarket(market).fee();
     }
 
     function mintNFT(

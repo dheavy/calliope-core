@@ -14,6 +14,10 @@ import {
   Contract,
   ContractFactory
 } from 'ethers';
+import {
+  smockit,
+  MockContract
+} from '@eth-optimism/smock';
 
 use(asPromised);
 
@@ -28,11 +32,11 @@ type BidShares = {
 
 type Ask = {
   currency: string;
-  amount: BigNumberish;
+  amount: BigNumber;
 };
 
 type Bid = {
-  amount: BigNumberish;
+  amount: BigNumber;
   currency: string;
   bidder: string;
   recipient: string;
@@ -57,9 +61,10 @@ describe('Market', () => {
   let defaultFee: Fee;
   let testERC20: Contract;
   let marketProxy: Contract;
+  let mockMarketProxy: MockContract;
   let preparedMarket: Contract;
   let moneyMinter: SignerWithAddress;
-  let serviceFeeReceiver: SignerWithAddress;
+  let serviceFeeRecipient: SignerWithAddress;
   let bidder: SignerWithAddress;
   let setAsk: Function;
   let approveERC20: Function;
@@ -73,22 +78,24 @@ describe('Market', () => {
 
     signers = await ethers.getSigners();
     moneyMinter = signers[0];
-    serviceFeeReceiver = signers[3];
+    serviceFeeRecipient = signers[3];
 
     testERC20 = await TestERC20Factory
       .connect(moneyMinter)
-      .deploy(BigNumber.from('1000'));
+      .deploy(Decimal.new(1000).value);
 
     currency = testERC20.address;
 
     defaultFee = {
       percent: Decimal.new(2.5),
-      recipient: serviceFeeReceiver.address
+      recipient: serviceFeeRecipient.address
     };
 
     marketProxy = await TestMarketProxyFactory
       .connect(moneyMinter)
       .deploy(currency, defaultFee);
+
+    mockMarketProxy = await smockit(marketProxy);
 
     productAddr = await marketProxy.address;
 
@@ -100,12 +107,12 @@ describe('Market', () => {
     };
 
     defaultAsk = {
-      amount: 100,
+      amount: Decimal.new(100).value,
       currency
     };
 
     defaultBid = {
-      amount: 50,
+      amount: Decimal.new(50).value,
       currency,
       bidder: bidder.address,
       recipient: signers[5].address
@@ -144,18 +151,83 @@ describe('Market', () => {
     });
   });
 
-  describe('#setAsk', () => {
-    it('should revert if Ask amount shares do not add up properly when split into token shares percentages', async () => {
-      // Percentages are taken here from defaultBidShares (70%, 20%, 10%).
-      // Shares are calculated rounding down to the closest integer.
-      // So with an amount of 88 => Math.floor(88 * 80 / 100) + (Math.floor(88 * 10 / 100) * 2) => 70 + 16 => 86 != 88
-      await expect(marketProxy.marketSetAsk(tokenId, { ...defaultAsk, amount: 88 }))
-        .to.eventually.be.rejectedWith('Market: invalid Ask for share-splitting');
+  describe('#areValidBidShares', () => {
+    it('returns false if bid shares from a Bid, added up, do not return 100 * 10**18', async () => {
+      await expect(marketProxy.areValidBidShares({ creator: Decimal.new(90), owner: Decimal.new(11) }))
+        .to.eventually.be.false;
+
+      await expect(marketProxy.areValidBidShares({ owner: Decimal.new(10), creator: Decimal.new(89) }))
+        .to.eventually.be.false;
     });
 
-    it('should fulfill if Ask amount shares add up properly when split into token shares percentages', async () => {
-      // Amount of 90 => Math.floor(90 * 80 / 100) + (Math.floor(90 * 10 / 100) * 2) => 72 + 18 => 90
-      await expect(marketProxy.marketSetAsk(tokenId, { ...defaultAsk, amount: 90 }))
+    it('returns true if bid shares from a Bid, added up, do return 100 * 10**18', async () => {
+      await expect(marketProxy.areValidBidShares({ creator: Decimal.new(90), owner: Decimal.new(10) }))
+        .to.eventually.be.true;
+    })
+  });
+
+  describe('#splitShare', () => {
+    it('returns the amount, as unsigned integer, of a percentage of an original amount', async () => {
+      let origAmount = BigNumber.from('100');
+      let percentage = Decimal.new(33);
+      let expectedAmount = 33;
+      let result = await marketProxy.splitShare(percentage, origAmount);
+      expect(+result.toString()).to.eq(expectedAmount);
+
+      origAmount = BigNumber.from('1337');
+      expectedAmount = 34;  // 34.762 rounded to floor integer
+      percentage = Decimal.new(2.6);
+      result = await marketProxy.splitShare(percentage, origAmount);
+      expect(+result.toString()).to.eq(expectedAmount);
+    });
+  });
+
+  describe('#isValidBid', () => {
+    it('returns false if bid amount is 0', async () => {
+      await expect(marketProxy.isValidBid(tokenId, 0))
+        .to.eventually.be.false;
+    });
+
+    it('returns false if #areValidBidShares is false', async () => {
+      mockMarketProxy.smocked.areValidBidShares.will.return.with(false);
+
+      await expect(mockMarketProxy.isValidBid(tokenId, 10))
+        .to.eventually.be.false;
+    });
+
+    it('returns true if bid amount is above 0', async () => {
+      await expect(marketProxy.isValidBid(tokenId, 10))
+        .to.eventually.be.true;
+    });
+  });
+
+  describe('#fee', () => {
+    it('returns the service fee applied in this market', async () => {
+      const fee = await marketProxy.fee();
+      expect(fee).to.exist;
+
+      const { percent, recipient } = fee as Fee;
+      expect(percent).to.exist;
+      expect(percent.value).to.eq(defaultFee.percent.value);
+      expect(recipient).to.exist;
+      expect(recipient).to.eq(defaultFee.recipient);
+    });
+  });
+
+  describe('#setAsk', () => {
+    it('should revert if not called by parent Product', async () => {
+      const market = await MarketFactory.deploy(productAddr, currency, defaultFee);
+      await expect(market.setAsk(tokenId, defaultAsk))
+        .to.be.rejectedWith('Market: Product call only');
+    });
+
+    it('should revert if #isValidBid is false when invoking #setAsk (e.g. Ask amount makes an invalid bid)', async () => {
+      await expect(marketProxy.marketSetAsk(tokenId, { ...defaultAsk, amount: BigNumber.from(0) }))
+        .to.eventually.be.rejectedWith('Market: invalid Ask');
+    });
+
+    it('should fulfill if #isValidBid is true when invoking #setAsk', async () => {
+      await expect(marketProxy.marketSetAsk(tokenId, { ...defaultAsk, amount: BigNumber.from(1) }))
         .to.eventually.be.fulfilled;
     });
 
@@ -166,11 +238,12 @@ describe('Market', () => {
       expect(currentAskForToken).to.exist;
       expect(parseInt(currentAskForToken.amount.toString()))
         .to.eq(parseInt(defaultAsk.amount.toString()));
-      expect(currentAskForToken.currency).to.eq(defaultAsk.currency);
+      expect(currentAskForToken.currency)
+        .to.eq(defaultAsk.currency);
     });
 
     it('should emit an AskCreated event', async () => {
-      await expect(marketProxy.marketSetAsk(tokenId, { ...defaultAsk }))
+      await expect(marketProxy.marketSetAsk(tokenId, defaultAsk))
         .to.emit(preparedMarket, 'AskCreated')
         .withArgs(tokenId, [defaultAsk.amount, defaultAsk.currency]);
     });
@@ -179,6 +252,12 @@ describe('Market', () => {
   describe('#removeAsk', () => {
     beforeEach(async () => {
       await setAsk();
+    });
+
+    it('should revert if not called by parent Product', async () => {
+      const market = await MarketFactory.deploy(productAddr, currency, defaultFee);
+      await expect(market.removeAsk(tokenId))
+        .to.be.rejectedWith('Market: Product call only');
     });
 
     it('should emit an AskRemoved event', async () => {
@@ -196,7 +275,7 @@ describe('Market', () => {
   });
 
   describe('#setBid', () => {
-    describe('fails', () => {
+    describe('failure', () => {
       it("should revert if bidder's address is the zero address", async () => {
         const bid: Bid = { ...defaultBid, bidder: ethers.constants.AddressZero };
 
@@ -205,13 +284,13 @@ describe('Market', () => {
       });
 
       it('should revert is bid amount is zero', async () => {
-        const bid: Bid = { ...defaultBid, amount: 0 };
+        const bid: Bid = { ...defaultBid, amount: Decimal.new(0).value };
 
         await expect(marketProxy.marketSetBid(tokenId, bid, signers[0].address))
           .to.be.eventually.rejectedWith('Market: invalid bid');
       });
 
-      it('should revert if currency in bid is is the zero address', async () => {
+      it('should revert if currency in bid is the zero address', async () => {
         const bid: Bid = { ...defaultBid, currency: ethers.constants.AddressZero };
 
         await expect(marketProxy.marketSetBid(tokenId, bid, signers[0].address))
@@ -226,17 +305,17 @@ describe('Market', () => {
       });
     });
 
-    describe('succeeds', () => {
+    describe('success', () => {
       beforeEach(async () => {
         // Bidder needs money to set bid.
         expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq('0');
-        await transferERC20(moneyMinter, bidder.address, 100);
-        expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq('100');
+        await transferERC20(moneyMinter, bidder.address, Decimal.new(100).value);
+        expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq(Decimal.new(100).value);
 
         // Approve contract and first signer (minter, creator...) to spend money on behalf of bidder to transfer when bid won.
         expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq('0');
-        await approveERC20(bidder, preparedMarket.address, 100);
-        expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq('100');
+        await approveERC20(bidder, preparedMarket.address, Decimal.new(100).value);
+        expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq(Decimal.new(100).value);
       });
 
       it('should emit a "BidCreated" event when bid is validated', async () => {
@@ -256,53 +335,54 @@ describe('Market', () => {
           .to.eq(defaultBid.amount.toString());
       });
 
-      describe('finalizing transfers', () => {
+      describe('finalizes transfer automatically if Bid matches Ask criteria', () => {
+        const decimalBase = 10**18;
+        let sellerSharesPercent: number;
+        let creatorSharesPercent: number;
+        let gainsFromSellerShares: number;
+        let gainsFromCreatorShares: number;
+        let gainsFromFees: number;
+
         let creatorAndOwner: SignerWithAddress;
 
         beforeEach(async () => {
+          sellerSharesPercent = +defaultBidShares.owner.value.toString() / decimalBase;
+          creatorSharesPercent = +defaultBidShares.creator.value.toString() / decimalBase;
+          gainsFromSellerShares = (+defaultBid.amount.toString() * sellerSharesPercent) / 100;
+          gainsFromCreatorShares = +defaultBid.amount.toString() - gainsFromSellerShares;
+          gainsFromFees = (gainsFromSellerShares * (+defaultFee.percent.value.toString() / decimalBase)) / 100;
+
           creatorAndOwner = signers[0];
+
           await mint();
           await setAsk({ ...defaultAsk, amount: defaultBid.amount });
           await marketProxy.marketSetBidShares(tokenId, defaultBidShares);
         });
 
-        it('should transfer expected share of sale to owner (seller)', async () => {
-          const decimalBase = 10**18;
-          const sellerSharesPercent = +defaultBidShares.owner.value.toString() / decimalBase;
-          const creatorSharesPercent = +defaultBidShares.creator.value.toString() / decimalBase;
-          const gainsFromSellerShares = (+defaultBid.amount.toString() * sellerSharesPercent) / 100;
-          const gainsFromCreatorShares = (+defaultBid.amount.toString() * creatorSharesPercent) / 100;
-
+        it('should transfer expected share of sale to owner (seller), and service fees to fee recipient', async () => {
           const origOwnerBalance = +(await testERC20.balanceOf(creatorAndOwner.address)).toString();
-          const expectedBalance = (
+          let expectedOwnerBalance = +(
             origOwnerBalance
             + gainsFromSellerShares     // Test user is both (first) owner...
-            + gainsFromCreatorShares    // ...and creator.
+            + gainsFromCreatorShares    // ...and creator, so expected gains are compounded...
+            - gainsFromFees             // ...but service fees are taken from that.
+          ).toString();
+
+          const origFeeRecipientBalance = +(await testERC20.balanceOf(serviceFeeRecipient.address)).toString();
+          const expectedFeeRecipientBalance = +(
+            origFeeRecipientBalance
+            + gainsFromFees
           ).toString();
 
           await marketProxy.marketSetBid(tokenId, defaultBid, bidder.address);
-          expect((await testERC20.balanceOf(creatorAndOwner.address)).toString())
-            .to.eq(expectedBalance);
+
+          const resultingOwnerBalance = (await testERC20.balanceOf(creatorAndOwner.address)).toString();
+          const resultingFeeRecipientBalance = (await testERC20.balanceOf(serviceFeeRecipient.address)).toString();
+
+          expect(+resultingOwnerBalance).to.eq(expectedOwnerBalance);
+          expect(+resultingFeeRecipientBalance).to.eq(expectedFeeRecipientBalance);
         });
       });
-
-      // it('should finalize NFT transfer automatically (move ERC-20 token amount from bidder to shareholders, move ERC-721 ownership from owner to bidder) if Bid matches Ask criterae (currency + equal or superior amount)', async () => {
-        // await setAsk({ ...defaultAsk, amount: defaultBid.amount });
-        // await mint();
-        // console.log((await testERC20.balanceOf(bidder.address)).toString());
-        // console.log((await testERC20.balanceOf(creatorAndOwner.address)).toString());
-
-        // console.log('productAddr', productAddr);
-        // console.log('marketProxy.address', marketProxy.address);
-        // console.log('signers[0].address', signers[0].address);
-
-        // Use proxy methods in TestMarketProxy to ensure caller is Product
-        // to bypass "onlyProduct" modifier revocations
-        // await marketProxy.marketSetBidShares(tokenId, defaultBidShares);
-        // await marketProxy.marketSetBid(tokenId, defaultBid, bidder.address);
-        // console.log((await testERC20.balanceOf(bidder.address)).toString());
-        // console.log((await testERC20.balanceOf(creatorAndOwner.address)).toString());
-      //});
     });
   });
 });

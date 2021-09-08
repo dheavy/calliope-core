@@ -63,7 +63,7 @@ contract Market is
     {
         require(
             isValidBid(tokenId_, ask_.amount),
-            "Market: invalid Ask for share-splitting"
+            "Market: invalid Ask"
         );
         _asks[tokenId_] = ask_;
         emit AskCreated(tokenId_, ask_);
@@ -135,7 +135,7 @@ contract Market is
         emit BidCreated(tokenId_, bid_);
 
         // Automatically accept bid and transfer ownership if criteriae for an ask are met.
-        // Ignore if criterae aren't met or Ask isn't set.
+        // Ignore if critera aren't met or Ask isn't set.
         if (_canAcceptBidAutomatically(tokenId_, bid_)) {
             _finalizeTransfer(tokenId_, bid_.bidder);
         }
@@ -252,14 +252,7 @@ contract Market is
         returns (bool)
     {
         BidShares memory bidShares = bidSharesForToken(tokenId_);
-        require(
-            areValidBidShares(bidShares),
-            "Market: invalid bid shares, must sum to 100"
-        );
-
-        return bidAmount_ != 0 &&
-            bidAmount_ == splitShare(bidShares.creator, bidAmount_)
-                + splitShare(bidShares.owner, bidAmount_);
+        return areValidBidShares(bidShares) && bidAmount_ > 0;
     }
 
     function areValidBidShares(
@@ -271,7 +264,7 @@ contract Market is
         returns (bool)
     {
         return bidShares_.creator.value
-            + bidShares_.owner.value == uint256(100) * Decimal.BASE;
+             + bidShares_.owner.value == uint256(100) * Decimal.BASE;
     }
 
     function splitShare(
@@ -334,19 +327,27 @@ contract Market is
         BidShares storage bidShares = _bidShares[tokenId_];
         IERC20 token = IERC20(bid.currency);
 
-        // Transfer bid share to seller.
-        token.transfer(
-            IERC721(product).ownerOf(tokenId_),
-            splitShare(bidShares.owner, bid.amount)
-        );
-
         // Transfer bid share to Product creator.
         token.transfer(
             IProduct(product).creator(),
             splitShare(bidShares.creator, bid.amount)
         );
 
-        // TODO: implement fee fees
+        // Calculate shares to transfer to owner after service fees.
+        uint256 ownerShareBeforeFees = splitShare(bidShares.owner, bid.amount);
+        uint256 serviceFees = splitShare(_fee.percent, ownerShareBeforeFees);
+
+        // Transfer owner shares minus fees.
+        token.transfer(
+            IERC721(product).ownerOf(tokenId_),
+            ownerShareBeforeFees - serviceFees
+        );
+
+        // Transfer service fees.
+        token.transfer(
+            _fee.recipient,
+            serviceFees
+        );
 
         // // Transfer media to bid recipient.
         // Product(product).transferAfterAuction(tokenId_, bid.recipient);
