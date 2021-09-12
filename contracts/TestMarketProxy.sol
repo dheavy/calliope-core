@@ -33,6 +33,7 @@ contract TestMarketProxy is
     bytes32 public constant PRODUCT_OWNER_ROLE = keccak256("PRODUCT_OWNER_ROLE");
 
     address public market;
+    address public tokenTransferedTo;
 
     constructor(
         address currency_,
@@ -42,6 +43,7 @@ contract TestMarketProxy is
     {
         _setupRole(PRODUCT_OWNER_ROLE, _msgSender());
         market = address(new Market(address(this), currency_, fee_));
+        tokenTransferedTo = address(0);
     }
 
     function marketSetBidShares(
@@ -101,6 +103,27 @@ contract TestMarketProxy is
         return IMarket(market).splitShare(sharePercent_, amount_);
     }
 
+    function marketAcceptBid(
+        uint256 tokenId_,
+        IMarket.Bid calldata expectedBid_
+    )
+        external
+    {
+        return IMarket(market).acceptBid(tokenId_, expectedBid_);
+    }
+
+    function marketPause()
+        external
+    {
+        return Market(market).pause();
+    }
+
+    function marketUnpause()
+        external
+    {
+        return Market(market).unpause();
+    }
+
     function isValidBid(
         uint256 tokenId_,
         uint256 bidAmount_
@@ -137,6 +160,17 @@ contract TestMarketProxy is
         return getRoleMember(PRODUCT_OWNER_ROLE, 0);
     }
 
+    function transferAfterAuction(
+        uint256 tokenId_,
+        address to_
+    )
+        external
+        override
+    {
+        tokenId_;
+        tokenTransferedTo = to_;
+    }
+
     function setAsk(uint256 tokenId_, IMarket.Ask memory ask_) external override {}
     function removeAsk(uint256 tokenId_) external override {}
     function mint(string calldata baseTokenURI_, IMarket.BidShares memory bidShares_) external override {}
@@ -144,7 +178,6 @@ contract TestMarketProxy is
     function acceptBid(uint256 tokenId_, IMarket.Bid memory bid_) external override {}
     function removeBid(uint256 tokenId_) external override {}
     function updateTokenURI(uint256 tokenId_, string calldata tokenURI_) external override {}
-    function transferAfterAuction(uint256 tokenId_, address to_) external override {}
     function lend(uint256 tokenId_) external override {}
     function recover(uint256 tokenId_) external override {}
 

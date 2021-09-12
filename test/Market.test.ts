@@ -39,7 +39,6 @@ type Bid = {
   amount: BigNumber;
   currency: string;
   bidder: string;
-  recipient: string;
 };
 
 type Fee = {
@@ -67,8 +66,10 @@ describe('Market', () => {
   let serviceFeeRecipient: SignerWithAddress;
   let bidder: SignerWithAddress;
   let setAsk: Function;
+  let setBidShares: Function;
   let approveERC20: Function;
   let transferERC20: Function;
+  let prepareBalancesAndAllowances: Function;
   let mint: Function;
 
   beforeEach(async () => {
@@ -114,12 +115,15 @@ describe('Market', () => {
     defaultBid = {
       amount: Decimal.new(50).value,
       currency,
-      bidder: bidder.address,
-      recipient: signers[5].address
+      bidder: bidder.address
     };
 
-    preparedMarket = (await (async () => {
+    setBidShares = async () => {
       await marketProxy.marketSetBidShares(tokenId, defaultBidShares);
+    }
+
+    preparedMarket = (await (async () => {
+      await setBidShares();
       const marketAddr = await marketProxy.market();
       return (await MarketFactory.attach(marketAddr));
     })());
@@ -139,6 +143,18 @@ describe('Market', () => {
     mint = async () => {
       await marketProxy.mintNFT(tokenId);
     };
+
+    prepareBalancesAndAllowances = async () => {
+      // Bidder needs money to set bid.
+      expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq('0');
+      await transferERC20(moneyMinter, bidder.address, Decimal.new(100).value);
+      expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq(Decimal.new(100).value);
+
+      // Approve contract to spend money on behalf of bidder to transfer when bid won.
+      expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq('0');
+      await approveERC20(bidder, preparedMarket.address, Decimal.new(100).value);
+      expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq(Decimal.new(100).value);
+    }
   });
 
   describe('#constructor', () => {
@@ -147,7 +163,7 @@ describe('Market', () => {
     });
 
     it('specify "product" address in constructor to be available as getter', async () => {
-      await expect(preparedMarket.product()).to.eventually.eq(productAddr)
+      await expect(preparedMarket.product()).to.eventually.eq(productAddr);
     });
   });
 
@@ -306,16 +322,23 @@ describe('Market', () => {
     });
 
     describe('success', () => {
-      beforeEach(async () => {
-        // Bidder needs money to set bid.
-        expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq('0');
-        await transferERC20(moneyMinter, bidder.address, Decimal.new(100).value);
-        expect((await testERC20.balanceOf(bidder.address)).toString()).to.eq(Decimal.new(100).value);
+      beforeEach(async () => await prepareBalancesAndAllowances());
 
-        // Approve contract and first signer (minter, creator...) to spend money on behalf of bidder to transfer when bid won.
-        expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq('0');
-        await approveERC20(bidder, preparedMarket.address, Decimal.new(100).value);
-        expect((await testERC20.allowance(bidder.address, preparedMarket.address)).toString()).to.eq(Decimal.new(100).value);
+      it('should refund existing bid from a bidder when bidder places new one', async () => {
+        await mint();
+        await setAsk();
+        await setBidShares();
+
+        const origBalance: BigNumber = await testERC20.balanceOf(bidder.address);
+        await marketProxy.marketSetBid(tokenId, defaultBid, bidder.address);
+        const balanceAfterFistBid = await testERC20.balanceOf(bidder.address);
+        const bidAmount: number = +defaultBid.amount.toString();
+        expect(+balanceAfterFistBid.toString()).to.eq(+origBalance.toString() - bidAmount);
+
+        const newBidAmount = Decimal.new(10).value;
+        await marketProxy.marketSetBid(tokenId, { ...defaultBid, amount: newBidAmount }, bidder.address)
+        const balanceAfterSecondBid = await testERC20.balanceOf(bidder.address);
+        expect(+balanceAfterSecondBid.toString()).to.eq(+origBalance.toString() - +newBidAmount.toString())
       });
 
       it('should emit a "BidCreated" event when bid is validated', async () => {
@@ -324,8 +347,7 @@ describe('Market', () => {
           .withArgs(tokenId, [
             defaultBid.amount,
             defaultBid.currency,
-            defaultBid.bidder,
-            defaultBid.recipient,
+            defaultBid.bidder
           ]);
       });
 
@@ -356,7 +378,7 @@ describe('Market', () => {
 
           await mint();
           await setAsk({ ...defaultAsk, amount: defaultBid.amount });
-          await marketProxy.marketSetBidShares(tokenId, defaultBidShares);
+          await setBidShares();
         });
 
         it('should transfer expected share of sale to owner (seller), and service fees to fee recipient', async () => {
@@ -382,7 +404,92 @@ describe('Market', () => {
           expect(+resultingOwnerBalance).to.eq(expectedOwnerBalance);
           expect(+resultingFeeRecipientBalance).to.eq(expectedFeeRecipientBalance);
         });
+
+        it('should invoke #transferAfterAuction on parent Product', async () => {
+          await expect(marketProxy.tokenTransferedTo()).to.eventually.eq(ethers.constants.AddressZero);
+          await marketProxy.marketSetBid(tokenId, defaultBid, bidder.address);
+          await expect(marketProxy.tokenTransferedTo()).to.eventually.eq(bidder.address);
+        });
+
+        it('should emit an BidShareUpdated event', async () => {
+          await expect(marketProxy.marketSetBid(tokenId, defaultBid, bidder.address))
+            .to.emit(preparedMarket, 'BidShareUpdated');
+        });
+
+        it('should emit an BidFinalized event', async () => {
+          await expect(marketProxy.marketSetBid(tokenId, defaultBid, bidder.address))
+            .to.emit(preparedMarket, 'BidFinalized');
+        });
       });
+    });
+  });
+
+  describe('#acceptBid', () => {
+    beforeEach(async () => {
+      await mint();
+      await setAsk();
+      await setBidShares();
+      await prepareBalancesAndAllowances();
+      await marketProxy.marketSetBid(tokenId, defaultBid, bidder.address);
+    });
+
+    it('should revert if bid amount is lower than or equal to zero', async () => {
+      await expect(marketProxy.marketAcceptBid(tokenId, { ...defaultBid, amount: Decimal.new(0).value }))
+        .to.eventually.be.rejectedWith('Market: unexpected bid');
+    });
+
+    it('should revert if bid passed as parameter differs from the one currently registered in storage for bidder', async () => {
+      await expect(marketProxy.marketAcceptBid(tokenId, { ...defaultBid, amount: Decimal.new(1337).value }))
+        .to.eventually.be.rejectedWith('Market: unexpected bid');
+
+      await expect(marketProxy.marketAcceptBid(tokenId, { ...defaultBid, currency: signers[0].address }))
+        .to.eventually.be.rejectedWith('Market: unexpected bid');
+
+      await expect(marketProxy.marketAcceptBid(tokenId, { ...defaultBid, bidder: signers[0].address }))
+        .to.eventually.be.rejectedWith('Market: unexpected bid');
+    });
+
+    it('should initiate the NFT transfer process', async () => {
+      await expect(marketProxy.tokenTransferedTo()).to.eventually.eq(ethers.constants.AddressZero);
+      await expect(marketProxy.marketAcceptBid(tokenId, defaultBid));
+      await expect(marketProxy.tokenTransferedTo()).to.eventually.eq(bidder.address);
+    });
+  });
+
+  describe('#pause', () => {
+    it('should set deployer Product as pauser role by default, and pause if invoked from Product', async () => {
+      await marketProxy.marketPause();
+      const isPaused = await preparedMarket.paused();
+      expect(isPaused).to.eq(true);
+    });
+
+    it('should revert if pause is attempted from non-parent-Product', async () => {
+      await expect(preparedMarket.pause())
+        .to.eventually.be.rejectedWith('Market: Product call only');
+    });
+
+    it('should revert if pause is attempted when contract is already paused', async () => {
+      await marketProxy.marketPause();
+      await expect(marketProxy.marketPause())
+        .to.eventually.be.rejectedWith('Pausable: paused');
+    });
+  });
+
+  describe('#unpause', () => {
+    it('should revert if pause is attempted from non-parent-Product', async () => {
+      await marketProxy.marketPause();
+      await expect(preparedMarket.unpause())
+        .to.eventually.be.rejectedWith('Market: Product call only');
+    });
+
+    it('should unpause if invoked from Product on paused contract', async () => {
+      await marketProxy.marketPause();
+      await expect(marketProxy.marketUnpause()).to.be.fulfilled;
+    });
+
+    it('should revert if unpause is attempted when contract currently not paused', async () => {
+      await expect(marketProxy.marketUnpause())
+      .to.eventually.be.rejectedWith('Pausable: not paused');
     });
   });
 });

@@ -8,7 +8,6 @@ interface IMarket {
         uint256 amount;
         address currency;
         address bidder;
-        address recipient;
     }
 
     struct Ask {
@@ -68,14 +67,6 @@ interface IMarket {
         BidShares memory bidShares_
     )
         external;
-
-    function getBidFromBidder(
-        uint256 tokenId_,
-        address bidder_
-    )
-        external
-        view
-        returns (Bid memory);
 
     function currentAskForToken(
         uint256 tokenId_

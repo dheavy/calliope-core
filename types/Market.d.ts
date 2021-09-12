@@ -24,9 +24,9 @@ interface MarketInterface extends ethers.utils.Interface {
     "acceptBid(uint256,tuple)": FunctionFragment;
     "areValidBidShares(tuple)": FunctionFragment;
     "bidSharesForToken(uint256)": FunctionFragment;
+    "c_0xb32ebe3f(bytes32)": FunctionFragment;
     "currentAskForToken(uint256)": FunctionFragment;
     "fee()": FunctionFragment;
-    "getBidFromBidder(uint256,address)": FunctionFragment;
     "isValidBid(uint256,uint256)": FunctionFragment;
     "pause()": FunctionFragment;
     "paused()": FunctionFragment;
@@ -44,12 +44,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "acceptBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -63,14 +58,14 @@ interface MarketInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(
+    functionFragment: "c_0xb32ebe3f",
+    values: [BytesLike]
+  ): string;
+  encodeFunctionData(
     functionFragment: "currentAskForToken",
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getBidFromBidder",
-    values: [BigNumberish, string]
-  ): string;
   encodeFunctionData(
     functionFragment: "isValidBid",
     values: [BigNumberish, BigNumberish]
@@ -94,12 +89,7 @@ interface MarketInterface extends ethers.utils.Interface {
     functionFragment: "setBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      { amount: BigNumberish; currency: string; bidder: string },
       string
     ]
   ): string;
@@ -126,14 +116,14 @@ interface MarketInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "c_0xb32ebe3f",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "currentAskForToken",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getBidFromBidder",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "isValidBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "pause", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "paused", data: BytesLike): Result;
@@ -216,12 +206,7 @@ export class Market extends BaseContract {
   functions: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -248,6 +233,11 @@ export class Market extends BaseContract {
       ]
     >;
 
+    c_0xb32ebe3f(
+      c__0xb32ebe3f: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
+
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
@@ -259,21 +249,6 @@ export class Market extends BaseContract {
       [
         [[BigNumber] & { value: BigNumber }, string] & {
           percent: [BigNumber] & { value: BigNumber };
-          recipient: string;
-        }
-      ]
-    >;
-
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [BigNumber, string, string, string] & {
-          amount: BigNumber;
-          currency: string;
-          bidder: string;
           recipient: string;
         }
       ]
@@ -312,12 +287,7 @@ export class Market extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -344,12 +314,7 @@ export class Market extends BaseContract {
 
   acceptBid(
     tokenId_: BigNumberish,
-    expectedBid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -371,6 +336,11 @@ export class Market extends BaseContract {
     }
   >;
 
+  c_0xb32ebe3f(
+    c__0xb32ebe3f: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
+
   currentAskForToken(
     tokenId_: BigNumberish,
     overrides?: CallOverrides
@@ -381,19 +351,6 @@ export class Market extends BaseContract {
   ): Promise<
     [[BigNumber] & { value: BigNumber }, string] & {
       percent: [BigNumber] & { value: BigNumber };
-      recipient: string;
-    }
-  >;
-
-  getBidFromBidder(
-    tokenId_: BigNumberish,
-    bidder_: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, string, string] & {
-      amount: BigNumber;
-      currency: string;
-      bidder: string;
       recipient: string;
     }
   >;
@@ -431,12 +388,7 @@ export class Market extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     from_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -463,12 +415,7 @@ export class Market extends BaseContract {
   callStatic: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -493,6 +440,11 @@ export class Market extends BaseContract {
       }
     >;
 
+    c_0xb32ebe3f(
+      c__0xb32ebe3f: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
@@ -503,19 +455,6 @@ export class Market extends BaseContract {
     ): Promise<
       [[BigNumber] & { value: BigNumber }, string] & {
         percent: [BigNumber] & { value: BigNumber };
-        recipient: string;
-      }
-    >;
-
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, string, string] & {
-        amount: BigNumber;
-        currency: string;
-        bidder: string;
         recipient: string;
       }
     >;
@@ -548,12 +487,7 @@ export class Market extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -611,20 +545,18 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -635,20 +567,18 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -659,20 +589,18 @@ export class Market extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -711,12 +639,7 @@ export class Market extends BaseContract {
   estimateGas: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -733,18 +656,17 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
+    c_0xb32ebe3f(
+      c__0xb32ebe3f: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
+
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     fee(overrides?: CallOverrides): Promise<BigNumber>;
-
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
 
     isValidBid(
       tokenId_: BigNumberish,
@@ -779,12 +701,7 @@ export class Market extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -812,12 +729,7 @@ export class Market extends BaseContract {
   populateTransaction: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -834,18 +746,17 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
+    c_0xb32ebe3f(
+      c__0xb32ebe3f: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     fee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     isValidBid(
       tokenId_: BigNumberish,
@@ -880,12 +791,7 @@ export class Market extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

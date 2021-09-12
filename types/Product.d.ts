@@ -29,6 +29,7 @@ interface ProductInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
     "burn(uint256)": FunctionFragment;
+    "c_0x6ac40360(bytes32)": FunctionFragment;
     "creator()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
     "getRoleAdmin(bytes32)": FunctionFragment;
@@ -88,12 +89,7 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "acceptBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -102,6 +98,10 @@ interface ProductInterface extends ethers.utils.Interface {
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
   encodeFunctionData(functionFragment: "burn", values: [BigNumberish]): string;
+  encodeFunctionData(
+    functionFragment: "c_0x6ac40360",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
   encodeFunctionData(
     functionFragment: "getApproved",
@@ -190,12 +190,7 @@ interface ProductInterface extends ethers.utils.Interface {
     functionFragment: "setBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(functionFragment: "sku", values?: undefined): string;
@@ -258,6 +253,10 @@ interface ProductInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "approve", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "burn", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0x6ac40360",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "getApproved",
@@ -420,12 +419,7 @@ export class Product extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -441,6 +435,11 @@ export class Product extends BaseContract {
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
     creator(overrides?: CallOverrides): Promise<[string]>;
 
@@ -567,12 +566,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -639,12 +633,7 @@ export class Product extends BaseContract {
 
   acceptBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -660,6 +649,11 @@ export class Product extends BaseContract {
     tokenId_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
+
+  c_0x6ac40360(
+    c__0x6ac40360: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   creator(overrides?: CallOverrides): Promise<string>;
 
@@ -783,12 +777,7 @@ export class Product extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -852,12 +841,7 @@ export class Product extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -870,6 +854,11 @@ export class Product extends BaseContract {
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     burn(tokenId_: BigNumberish, overrides?: CallOverrides): Promise<void>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     creator(overrides?: CallOverrides): Promise<string>;
 
@@ -979,12 +968,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1128,12 +1112,7 @@ export class Product extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1148,6 +1127,11 @@ export class Product extends BaseContract {
     burn(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
     ): Promise<BigNumber>;
 
     creator(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1278,12 +1262,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1355,12 +1334,7 @@ export class Product extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1378,6 +1352,11 @@ export class Product extends BaseContract {
     burn(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    c_0x6ac40360(
+      c__0x6ac40360: BytesLike,
+      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     creator(overrides?: CallOverrides): Promise<PopulatedTransaction>;
@@ -1514,12 +1493,7 @@ export class Product extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

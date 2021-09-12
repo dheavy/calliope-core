@@ -38,12 +38,7 @@ interface IProductInterface extends ethers.utils.Interface {
     functionFragment: "acceptBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
@@ -75,12 +70,7 @@ interface IProductInterface extends ethers.utils.Interface {
     functionFragment: "setBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -165,12 +155,7 @@ export class IProduct extends BaseContract {
   functions: {
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -213,12 +198,7 @@ export class IProduct extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -237,12 +217,7 @@ export class IProduct extends BaseContract {
 
   acceptBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -285,12 +260,7 @@ export class IProduct extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -309,12 +279,7 @@ export class IProduct extends BaseContract {
   callStatic: {
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -345,12 +310,7 @@ export class IProduct extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -390,12 +350,7 @@ export class IProduct extends BaseContract {
   estimateGas: {
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -438,12 +393,7 @@ export class IProduct extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -463,12 +413,7 @@ export class IProduct extends BaseContract {
   populateTransaction: {
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -511,12 +456,7 @@ export class IProduct extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 

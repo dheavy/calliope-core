@@ -95,11 +95,6 @@ const _abi = [
             name: "bidder",
             type: "address",
           },
-          {
-            internalType: "address",
-            name: "recipient",
-            type: "address",
-          },
         ],
         indexed: false,
         internalType: "struct IMarket.Bid",
@@ -136,11 +131,6 @@ const _abi = [
             name: "bidder",
             type: "address",
           },
-          {
-            internalType: "address",
-            name: "recipient",
-            type: "address",
-          },
         ],
         indexed: false,
         internalType: "struct IMarket.Bid",
@@ -175,11 +165,6 @@ const _abi = [
           {
             internalType: "address",
             name: "bidder",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "recipient",
             type: "address",
           },
         ],
@@ -259,11 +244,6 @@ const _abi = [
           {
             internalType: "address",
             name: "bidder",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "recipient",
             type: "address",
           },
         ],
@@ -438,52 +418,6 @@ const _abi = [
         type: "uint256",
       },
       {
-        internalType: "address",
-        name: "bidder_",
-        type: "address",
-      },
-    ],
-    name: "getBidFromBidder",
-    outputs: [
-      {
-        components: [
-          {
-            internalType: "uint256",
-            name: "amount",
-            type: "uint256",
-          },
-          {
-            internalType: "address",
-            name: "currency",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "bidder",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "recipient",
-            type: "address",
-          },
-        ],
-        internalType: "struct IMarket.Bid",
-        name: "",
-        type: "tuple",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "tokenId_",
-        type: "uint256",
-      },
-      {
         internalType: "uint256",
         name: "bidAmount_",
         type: "uint256",
@@ -583,11 +517,6 @@ const _abi = [
           {
             internalType: "address",
             name: "bidder",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "recipient",
             type: "address",
           },
         ],

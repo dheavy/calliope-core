@@ -18,43 +18,25 @@ import { Listener, Provider } from "@ethersproject/providers";
 import { FunctionFragment, EventFragment, Result } from "@ethersproject/abi";
 import { TypedEventFilter, TypedEvent, TypedListener } from "./commons";
 
-interface StringUtilsInterface extends ethers.utils.Interface {
+interface MathInterface extends ethers.utils.Interface {
   functions: {
-    "areStringEquals(string,string)": FunctionFragment;
-    "c_0x3059a0db(bytes32)": FunctionFragment;
-    "isEmptyString(string)": FunctionFragment;
+    "c_0xab7d2c8b(bytes32)": FunctionFragment;
   };
 
   encodeFunctionData(
-    functionFragment: "areStringEquals",
-    values: [string, string]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0x3059a0db",
+    functionFragment: "c_0xab7d2c8b",
     values: [BytesLike]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "isEmptyString",
-    values: [string]
   ): string;
 
   decodeFunctionResult(
-    functionFragment: "areStringEquals",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0x3059a0db",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "isEmptyString",
+    functionFragment: "c_0xab7d2c8b",
     data: BytesLike
   ): Result;
 
   events: {};
 }
 
-export class StringUtils extends BaseContract {
+export class Math extends BaseContract {
   connect(signerOrProvider: Signer | Provider | string): this;
   attach(addressOrName: string): this;
   deployed(): Promise<this>;
@@ -95,82 +77,39 @@ export class StringUtils extends BaseContract {
     toBlock?: string | number | undefined
   ): Promise<Array<TypedEvent<EventArgsArray & EventArgsObject>>>;
 
-  interface: StringUtilsInterface;
+  interface: MathInterface;
 
   functions: {
-    areStringEquals(
-      str1_: string,
-      str2_: string,
-      overrides?: CallOverrides
-    ): Promise<[boolean]>;
-
-    c_0x3059a0db(
-      c__0x3059a0db: BytesLike,
+    c_0xab7d2c8b(
+      c__0xab7d2c8b: BytesLike,
       overrides?: CallOverrides
     ): Promise<[void]>;
-
-    isEmptyString(str_: string, overrides?: CallOverrides): Promise<[boolean]>;
   };
 
-  areStringEquals(
-    str1_: string,
-    str2_: string,
-    overrides?: CallOverrides
-  ): Promise<boolean>;
-
-  c_0x3059a0db(
-    c__0x3059a0db: BytesLike,
+  c_0xab7d2c8b(
+    c__0xab7d2c8b: BytesLike,
     overrides?: CallOverrides
   ): Promise<void>;
 
-  isEmptyString(str_: string, overrides?: CallOverrides): Promise<boolean>;
-
   callStatic: {
-    areStringEquals(
-      str1_: string,
-      str2_: string,
-      overrides?: CallOverrides
-    ): Promise<boolean>;
-
-    c_0x3059a0db(
-      c__0x3059a0db: BytesLike,
+    c_0xab7d2c8b(
+      c__0xab7d2c8b: BytesLike,
       overrides?: CallOverrides
     ): Promise<void>;
-
-    isEmptyString(str_: string, overrides?: CallOverrides): Promise<boolean>;
   };
 
   filters: {};
 
   estimateGas: {
-    areStringEquals(
-      str1_: string,
-      str2_: string,
+    c_0xab7d2c8b(
+      c__0xab7d2c8b: BytesLike,
       overrides?: CallOverrides
     ): Promise<BigNumber>;
-
-    c_0x3059a0db(
-      c__0x3059a0db: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
-    isEmptyString(str_: string, overrides?: CallOverrides): Promise<BigNumber>;
   };
 
   populateTransaction: {
-    areStringEquals(
-      str1_: string,
-      str2_: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0x3059a0db(
-      c__0x3059a0db: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    isEmptyString(
-      str_: string,
+    c_0xab7d2c8b(
+      c__0xab7d2c8b: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
   };

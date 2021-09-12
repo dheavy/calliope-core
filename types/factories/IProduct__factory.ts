@@ -81,11 +81,6 @@ const _abi = [
             name: "bidder",
             type: "address",
           },
-          {
-            internalType: "address",
-            name: "recipient",
-            type: "address",
-          },
         ],
         internalType: "struct IMarket.Bid",
         name: "bid_",
@@ -258,11 +253,6 @@ const _abi = [
           {
             internalType: "address",
             name: "bidder",
-            type: "address",
-          },
-          {
-            internalType: "address",
-            name: "recipient",
             type: "address",
           },
         ],

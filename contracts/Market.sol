@@ -105,14 +105,9 @@ contract Market is
             bid_.currency == _currency,
             "Market: currency not accepted"
         );
-        require(
-            bid_.recipient != address(0),
-            "Market: invalid bid recipient"
-        );
 
-        Bid storage existingBid = _bidders[tokenId_][bid_.bidder];
-
-        if (existingBid.amount > 0) {
+        Bid storage existingBidFromSameBidder = _bidders[tokenId_][bid_.bidder];
+        if (existingBidFromSameBidder.amount > 0) {
             removeBid(tokenId_, bid_.bidder);
         }
 
@@ -129,9 +124,9 @@ contract Market is
         _bidders[tokenId_][bid_.bidder] = Bid(
             balanceAfter - balanceBefore,
             bid_.currency,
-            bid_.bidder,
-            bid_.recipient
+            bid_.bidder
         );
+
         emit BidCreated(tokenId_, bid_);
 
         // Automatically accept bid and transfer ownership if criteriae for an ask are met.
@@ -175,13 +170,9 @@ contract Market is
     {
         Bid memory bid = _bidders[tokenId_][expectedBid_.bidder];
         require(
-            bid.amount > 0,
-            "Market: invalid bid"
-        );
-        require(
+            bid.amount > 0 &&
             bid.amount == expectedBid_.amount &&
-            bid.currency == expectedBid_.currency &&
-            bid.recipient == expectedBid_.recipient,
+            bid.currency == expectedBid_.currency,
             "Market: unexpected bid"
         );
         require(
@@ -206,18 +197,6 @@ contract Market is
         );
         _bidShares[tokenId_] = bidShares_;
         emit BidShareUpdated(tokenId_, bidShares_);
-    }
-
-    function getBidFromBidder(
-        uint256 tokenId_,
-        address bidder_
-    )
-        external
-        view
-        override
-        returns (Bid memory)
-    {
-        return _bidders[tokenId_][bidder_];
     }
 
     function currentAskForToken(
@@ -349,13 +328,16 @@ contract Market is
             serviceFees
         );
 
-        // // Transfer media to bid recipient.
-        // Product(product).transferAfterAuction(tokenId_, bid.recipient);
+        // // Transfer Product to bidder.
+        IProduct(product).transferAfterAuction(
+            tokenId_,
+            bid.bidder
+        );
 
-        // // Remove accepted bid.
-        // delete _bidders[tokenId_][bidder_];
+        // Remove accepted bid.
+        delete _bidders[tokenId_][bidder_];
 
-        // emit BidShareUpdated(tokenId_, bidShares);
-        // emit BidFinalized(tokenId_, bid);
+        emit BidShareUpdated(tokenId_, bidShares);
+        emit BidFinalized(tokenId_, bid);
     }
 }

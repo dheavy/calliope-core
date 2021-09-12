@@ -27,6 +27,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "areValidBidShares(tuple)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
+    "c_0xec197219(bytes32)": FunctionFragment;
     "creator()": FunctionFragment;
     "fee()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
@@ -39,10 +40,13 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "isValidBid(uint256,uint256)": FunctionFragment;
     "lend(uint256)": FunctionFragment;
     "market()": FunctionFragment;
+    "marketAcceptBid(uint256,tuple)": FunctionFragment;
+    "marketPause()": FunctionFragment;
     "marketRemoveAsk(uint256)": FunctionFragment;
     "marketSetAsk(uint256,tuple)": FunctionFragment;
     "marketSetBid(uint256,tuple,address)": FunctionFragment;
     "marketSetBidShares(uint256,tuple)": FunctionFragment;
+    "marketUnpause()": FunctionFragment;
     "mint(string,tuple)": FunctionFragment;
     "mintNFT(uint256)": FunctionFragment;
     "name()": FunctionFragment;
@@ -59,6 +63,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "splitShare(tuple,uint256)": FunctionFragment;
     "supportsInterface(bytes4)": FunctionFragment;
     "symbol()": FunctionFragment;
+    "tokenTransferedTo()": FunctionFragment;
     "tokenURI(uint256)": FunctionFragment;
     "transferAfterAuction(uint256,address)": FunctionFragment;
     "transferFrom(address,address,uint256)": FunctionFragment;
@@ -77,12 +82,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     functionFragment: "acceptBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -96,6 +96,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
+  encodeFunctionData(
+    functionFragment: "c_0xec197219",
+    values: [BytesLike]
+  ): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
   encodeFunctionData(
@@ -133,6 +137,17 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   encodeFunctionData(functionFragment: "lend", values: [BigNumberish]): string;
   encodeFunctionData(functionFragment: "market", values?: undefined): string;
   encodeFunctionData(
+    functionFragment: "marketAcceptBid",
+    values: [
+      BigNumberish,
+      { amount: BigNumberish; currency: string; bidder: string }
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "marketPause",
+    values?: undefined
+  ): string;
+  encodeFunctionData(
     functionFragment: "marketRemoveAsk",
     values: [BigNumberish]
   ): string;
@@ -144,12 +159,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     functionFragment: "marketSetBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      { amount: BigNumberish; currency: string; bidder: string },
       string
     ]
   ): string;
@@ -159,6 +169,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
       BigNumberish,
       { creator: { value: BigNumberish }; owner: { value: BigNumberish } }
     ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "marketUnpause",
+    values?: undefined
   ): string;
   encodeFunctionData(
     functionFragment: "mint",
@@ -212,12 +226,7 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     functionFragment: "setBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -229,6 +238,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     values: [BytesLike]
   ): string;
   encodeFunctionData(functionFragment: "symbol", values?: undefined): string;
+  encodeFunctionData(
+    functionFragment: "tokenTransferedTo",
+    values?: undefined
+  ): string;
   encodeFunctionData(
     functionFragment: "tokenURI",
     values: [BigNumberish]
@@ -261,6 +274,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "c_0xec197219",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
   decodeFunctionResult(
@@ -289,6 +306,14 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   decodeFunctionResult(functionFragment: "lend", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "market", data: BytesLike): Result;
   decodeFunctionResult(
+    functionFragment: "marketAcceptBid",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "marketPause",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "marketRemoveAsk",
     data: BytesLike
   ): Result;
@@ -302,6 +327,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "marketSetBidShares",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
+    functionFragment: "marketUnpause",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "mint", data: BytesLike): Result;
@@ -332,6 +361,10 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "symbol", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "tokenTransferedTo",
+    data: BytesLike
+  ): Result;
   decodeFunctionResult(functionFragment: "tokenURI", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "transferAfterAuction",
@@ -417,12 +450,7 @@ export class TestMarketProxy extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -441,6 +469,11 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<[boolean]>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    c_0xec197219(
+      c__0xec197219: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<[void]>;
 
     creator(overrides?: CallOverrides): Promise<[string]>;
 
@@ -504,6 +537,16 @@ export class TestMarketProxy extends BaseContract {
 
     market(overrides?: CallOverrides): Promise<[string]>;
 
+    marketAcceptBid(
+      tokenId_: BigNumberish,
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    marketPause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
     marketRemoveAsk(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -517,12 +560,7 @@ export class TestMarketProxy extends BaseContract {
 
     marketSetBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -533,6 +571,10 @@ export class TestMarketProxy extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<ContractTransaction>;
+
+    marketUnpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -613,12 +655,7 @@ export class TestMarketProxy extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -634,6 +671,8 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<[boolean]>;
 
     symbol(overrides?: CallOverrides): Promise<[string]>;
+
+    tokenTransferedTo(overrides?: CallOverrides): Promise<[string]>;
 
     tokenURI(
       tokenId: BigNumberish,
@@ -666,12 +705,7 @@ export class TestMarketProxy extends BaseContract {
 
   acceptBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -690,6 +724,11 @@ export class TestMarketProxy extends BaseContract {
   ): Promise<boolean>;
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+  c_0xec197219(
+    c__0xec197219: BytesLike,
+    overrides?: CallOverrides
+  ): Promise<void>;
 
   creator(overrides?: CallOverrides): Promise<string>;
 
@@ -751,6 +790,16 @@ export class TestMarketProxy extends BaseContract {
 
   market(overrides?: CallOverrides): Promise<string>;
 
+  marketAcceptBid(
+    tokenId_: BigNumberish,
+    expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  marketPause(
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
   marketRemoveAsk(
     tokenId_: BigNumberish,
     overrides?: Overrides & { from?: string | Promise<string> }
@@ -764,12 +813,7 @@ export class TestMarketProxy extends BaseContract {
 
   marketSetBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     from_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -780,6 +824,10 @@ export class TestMarketProxy extends BaseContract {
       creator: { value: BigNumberish };
       owner: { value: BigNumberish };
     },
+    overrides?: Overrides & { from?: string | Promise<string> }
+  ): Promise<ContractTransaction>;
+
+  marketUnpause(
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -857,12 +905,7 @@ export class TestMarketProxy extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -878,6 +921,8 @@ export class TestMarketProxy extends BaseContract {
   ): Promise<boolean>;
 
   symbol(overrides?: CallOverrides): Promise<string>;
+
+  tokenTransferedTo(overrides?: CallOverrides): Promise<string>;
 
   tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -907,12 +952,7 @@ export class TestMarketProxy extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -931,6 +971,11 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<boolean>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    c_0xec197219(
+      c__0xec197219: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     creator(overrides?: CallOverrides): Promise<string>;
 
@@ -989,6 +1034,14 @@ export class TestMarketProxy extends BaseContract {
 
     market(overrides?: CallOverrides): Promise<string>;
 
+    marketAcceptBid(
+      tokenId_: BigNumberish,
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    marketPause(overrides?: CallOverrides): Promise<void>;
+
     marketRemoveAsk(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
@@ -1002,12 +1055,7 @@ export class TestMarketProxy extends BaseContract {
 
     marketSetBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -1020,6 +1068,8 @@ export class TestMarketProxy extends BaseContract {
       },
       overrides?: CallOverrides
     ): Promise<void>;
+
+    marketUnpause(overrides?: CallOverrides): Promise<void>;
 
     mint(
       baseTokenURI_: string,
@@ -1083,12 +1133,7 @@ export class TestMarketProxy extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -1104,6 +1149,8 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<boolean>;
 
     symbol(overrides?: CallOverrides): Promise<string>;
+
+    tokenTransferedTo(overrides?: CallOverrides): Promise<string>;
 
     tokenURI(tokenId: BigNumberish, overrides?: CallOverrides): Promise<string>;
 
@@ -1208,12 +1255,7 @@ export class TestMarketProxy extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1232,6 +1274,11 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<BigNumber>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
+
+    c_0xec197219(
+      c__0xec197219: BytesLike,
+      overrides?: CallOverrides
+    ): Promise<BigNumber>;
 
     creator(overrides?: CallOverrides): Promise<BigNumber>;
 
@@ -1289,6 +1336,16 @@ export class TestMarketProxy extends BaseContract {
 
     market(overrides?: CallOverrides): Promise<BigNumber>;
 
+    marketAcceptBid(
+      tokenId_: BigNumberish,
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    marketPause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
     marketRemoveAsk(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1302,12 +1359,7 @@ export class TestMarketProxy extends BaseContract {
 
     marketSetBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -1318,6 +1370,10 @@ export class TestMarketProxy extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<BigNumber>;
+
+    marketUnpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1398,12 +1454,7 @@ export class TestMarketProxy extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -1419,6 +1470,8 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<BigNumber>;
 
     symbol(overrides?: CallOverrides): Promise<BigNumber>;
+
+    tokenTransferedTo(overrides?: CallOverrides): Promise<BigNumber>;
 
     tokenURI(
       tokenId: BigNumberish,
@@ -1456,12 +1509,7 @@ export class TestMarketProxy extends BaseContract {
 
     acceptBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1481,6 +1529,11 @@ export class TestMarketProxy extends BaseContract {
 
     balanceOf(
       owner: string,
+      overrides?: CallOverrides
+    ): Promise<PopulatedTransaction>;
+
+    c_0xec197219(
+      c__0xec197219: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
@@ -1540,6 +1593,16 @@ export class TestMarketProxy extends BaseContract {
 
     market(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
+    marketAcceptBid(
+      tokenId_: BigNumberish,
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    marketPause(
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
     marketRemoveAsk(
       tokenId_: BigNumberish,
       overrides?: Overrides & { from?: string | Promise<string> }
@@ -1553,12 +1616,7 @@ export class TestMarketProxy extends BaseContract {
 
     marketSetBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
@@ -1569,6 +1627,10 @@ export class TestMarketProxy extends BaseContract {
         creator: { value: BigNumberish };
         owner: { value: BigNumberish };
       },
+      overrides?: Overrides & { from?: string | Promise<string> }
+    ): Promise<PopulatedTransaction>;
+
+    marketUnpause(
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1649,12 +1711,7 @@ export class TestMarketProxy extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -1670,6 +1727,8 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     symbol(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    tokenTransferedTo(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     tokenURI(
       tokenId: BigNumberish,

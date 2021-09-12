@@ -26,7 +26,6 @@ interface IMarketInterface extends ethers.utils.Interface {
     "bidSharesForToken(uint256)": FunctionFragment;
     "currentAskForToken(uint256)": FunctionFragment;
     "fee()": FunctionFragment;
-    "getBidFromBidder(uint256,address)": FunctionFragment;
     "isValidBid(uint256,uint256)": FunctionFragment;
     "removeAsk(uint256)": FunctionFragment;
     "removeBid(uint256,address)": FunctionFragment;
@@ -40,12 +39,7 @@ interface IMarketInterface extends ethers.utils.Interface {
     functionFragment: "acceptBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
+      { amount: BigNumberish; currency: string; bidder: string }
     ]
   ): string;
   encodeFunctionData(
@@ -63,10 +57,6 @@ interface IMarketInterface extends ethers.utils.Interface {
     values: [BigNumberish]
   ): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
-  encodeFunctionData(
-    functionFragment: "getBidFromBidder",
-    values: [BigNumberish, string]
-  ): string;
   encodeFunctionData(
     functionFragment: "isValidBid",
     values: [BigNumberish, BigNumberish]
@@ -87,12 +77,7 @@ interface IMarketInterface extends ethers.utils.Interface {
     functionFragment: "setBid",
     values: [
       BigNumberish,
-      {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      { amount: BigNumberish; currency: string; bidder: string },
       string
     ]
   ): string;
@@ -122,10 +107,6 @@ interface IMarketInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "getBidFromBidder",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "isValidBid", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeAsk", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "removeBid", data: BytesLike): Result;
@@ -200,12 +181,7 @@ export class IMarket extends BaseContract {
   functions: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
 
@@ -248,21 +224,6 @@ export class IMarket extends BaseContract {
       ]
     >;
 
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [
-        [BigNumber, string, string, string] & {
-          amount: BigNumber;
-          currency: string;
-          bidder: string;
-          recipient: string;
-        }
-      ]
-    >;
-
     isValidBid(
       tokenId_: BigNumberish,
       bidAmount_: BigNumberish,
@@ -288,12 +249,7 @@ export class IMarket extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<ContractTransaction>;
@@ -316,12 +272,7 @@ export class IMarket extends BaseContract {
 
   acceptBid(
     tokenId_: BigNumberish,
-    expectedBid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
 
@@ -357,19 +308,6 @@ export class IMarket extends BaseContract {
     }
   >;
 
-  getBidFromBidder(
-    tokenId_: BigNumberish,
-    bidder_: string,
-    overrides?: CallOverrides
-  ): Promise<
-    [BigNumber, string, string, string] & {
-      amount: BigNumber;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    }
-  >;
-
   isValidBid(
     tokenId_: BigNumberish,
     bidAmount_: BigNumberish,
@@ -395,12 +333,7 @@ export class IMarket extends BaseContract {
 
   setBid(
     tokenId_: BigNumberish,
-    bid_: {
-      amount: BigNumberish;
-      currency: string;
-      bidder: string;
-      recipient: string;
-    },
+    bid_: { amount: BigNumberish; currency: string; bidder: string },
     from_: string,
     overrides?: Overrides & { from?: string | Promise<string> }
   ): Promise<ContractTransaction>;
@@ -423,12 +356,7 @@ export class IMarket extends BaseContract {
   callStatic: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: CallOverrides
     ): Promise<void>;
 
@@ -467,19 +395,6 @@ export class IMarket extends BaseContract {
       }
     >;
 
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<
-      [BigNumber, string, string, string] & {
-        amount: BigNumber;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      }
-    >;
-
     isValidBid(
       tokenId_: BigNumberish,
       bidAmount_: BigNumberish,
@@ -502,12 +417,7 @@ export class IMarket extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: CallOverrides
     ): Promise<void>;
@@ -563,20 +473,18 @@ export class IMarket extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -587,20 +495,18 @@ export class IMarket extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -611,20 +517,18 @@ export class IMarket extends BaseContract {
     ): TypedEventFilter<
       [
         BigNumber,
-        [BigNumber, string, string, string] & {
+        [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         }
       ],
       {
         tokenId_: BigNumber;
-        bid_: [BigNumber, string, string, string] & {
+        bid_: [BigNumber, string, string] & {
           amount: BigNumber;
           currency: string;
           bidder: string;
-          recipient: string;
         };
       }
     >;
@@ -659,12 +563,7 @@ export class IMarket extends BaseContract {
   estimateGas: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
 
@@ -688,12 +587,6 @@ export class IMarket extends BaseContract {
 
     fee(overrides?: CallOverrides): Promise<BigNumber>;
 
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     isValidBid(
       tokenId_: BigNumberish,
       bidAmount_: BigNumberish,
@@ -719,12 +612,7 @@ export class IMarket extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<BigNumber>;
@@ -748,12 +636,7 @@ export class IMarket extends BaseContract {
   populateTransaction: {
     acceptBid(
       tokenId_: BigNumberish,
-      expectedBid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      expectedBid_: { amount: BigNumberish; currency: string; bidder: string },
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;
 
@@ -776,12 +659,6 @@ export class IMarket extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     fee(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    getBidFromBidder(
-      tokenId_: BigNumberish,
-      bidder_: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     isValidBid(
       tokenId_: BigNumberish,
@@ -808,12 +685,7 @@ export class IMarket extends BaseContract {
 
     setBid(
       tokenId_: BigNumberish,
-      bid_: {
-        amount: BigNumberish;
-        currency: string;
-        bidder: string;
-        recipient: string;
-      },
+      bid_: { amount: BigNumberish; currency: string; bidder: string },
       from_: string,
       overrides?: Overrides & { from?: string | Promise<string> }
     ): Promise<PopulatedTransaction>;

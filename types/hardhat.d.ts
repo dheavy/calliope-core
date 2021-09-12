@@ -101,6 +101,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IProduct__factory>;
     getContractFactory(
+      name: "Decimal",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Decimal__factory>;
+    getContractFactory(
+      name: "Math",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.Math__factory>;
+    getContractFactory(
       name: "StringUtils",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.StringUtils__factory>;
