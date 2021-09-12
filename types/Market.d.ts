@@ -24,7 +24,6 @@ interface MarketInterface extends ethers.utils.Interface {
     "acceptBid(uint256,tuple)": FunctionFragment;
     "areValidBidShares(tuple)": FunctionFragment;
     "bidSharesForToken(uint256)": FunctionFragment;
-    "c_0xb32ebe3f(bytes32)": FunctionFragment;
     "currentAskForToken(uint256)": FunctionFragment;
     "fee()": FunctionFragment;
     "isValidBid(uint256,uint256)": FunctionFragment;
@@ -56,10 +55,6 @@ interface MarketInterface extends ethers.utils.Interface {
   encodeFunctionData(
     functionFragment: "bidSharesForToken",
     values: [BigNumberish]
-  ): string;
-  encodeFunctionData(
-    functionFragment: "c_0xb32ebe3f",
-    values: [BytesLike]
   ): string;
   encodeFunctionData(
     functionFragment: "currentAskForToken",
@@ -113,10 +108,6 @@ interface MarketInterface extends ethers.utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "bidSharesForToken",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xb32ebe3f",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -233,11 +224,6 @@ export class Market extends BaseContract {
       ]
     >;
 
-    c_0xb32ebe3f(
-      c__0xb32ebe3f: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
-
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
@@ -335,11 +321,6 @@ export class Market extends BaseContract {
       owner: [BigNumber] & { value: BigNumber };
     }
   >;
-
-  c_0xb32ebe3f(
-    c__0xb32ebe3f: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
 
   currentAskForToken(
     tokenId_: BigNumberish,
@@ -439,11 +420,6 @@ export class Market extends BaseContract {
         owner: [BigNumber] & { value: BigNumber };
       }
     >;
-
-    c_0xb32ebe3f(
-      c__0xb32ebe3f: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     currentAskForToken(
       tokenId_: BigNumberish,
@@ -656,11 +632,6 @@ export class Market extends BaseContract {
       overrides?: CallOverrides
     ): Promise<BigNumber>;
 
-    c_0xb32ebe3f(
-      c__0xb32ebe3f: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     currentAskForToken(
       tokenId_: BigNumberish,
       overrides?: CallOverrides
@@ -743,11 +714,6 @@ export class Market extends BaseContract {
 
     bidSharesForToken(
       tokenId_: BigNumberish,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xb32ebe3f(
-      c__0xb32ebe3f: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

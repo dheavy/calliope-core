@@ -27,7 +27,6 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     "approve(address,uint256)": FunctionFragment;
     "areValidBidShares(tuple)": FunctionFragment;
     "balanceOf(address)": FunctionFragment;
-    "c_0xec197219(bytes32)": FunctionFragment;
     "creator()": FunctionFragment;
     "fee()": FunctionFragment;
     "getApproved(uint256)": FunctionFragment;
@@ -96,10 +95,6 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     ]
   ): string;
   encodeFunctionData(functionFragment: "balanceOf", values: [string]): string;
-  encodeFunctionData(
-    functionFragment: "c_0xec197219",
-    values: [BytesLike]
-  ): string;
   encodeFunctionData(functionFragment: "creator", values?: undefined): string;
   encodeFunctionData(functionFragment: "fee", values?: undefined): string;
   encodeFunctionData(
@@ -274,10 +269,6 @@ interface TestMarketProxyInterface extends ethers.utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "balanceOf", data: BytesLike): Result;
-  decodeFunctionResult(
-    functionFragment: "c_0xec197219",
-    data: BytesLike
-  ): Result;
   decodeFunctionResult(functionFragment: "creator", data: BytesLike): Result;
   decodeFunctionResult(functionFragment: "fee", data: BytesLike): Result;
   decodeFunctionResult(
@@ -469,11 +460,6 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<[boolean]>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
-    c_0xec197219(
-      c__0xec197219: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<[void]>;
 
     creator(overrides?: CallOverrides): Promise<[string]>;
 
@@ -725,11 +711,6 @@ export class TestMarketProxy extends BaseContract {
 
   balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-  c_0xec197219(
-    c__0xec197219: BytesLike,
-    overrides?: CallOverrides
-  ): Promise<void>;
-
   creator(overrides?: CallOverrides): Promise<string>;
 
   fee(
@@ -971,11 +952,6 @@ export class TestMarketProxy extends BaseContract {
     ): Promise<boolean>;
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
-
-    c_0xec197219(
-      c__0xec197219: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<void>;
 
     creator(overrides?: CallOverrides): Promise<string>;
 
@@ -1275,11 +1251,6 @@ export class TestMarketProxy extends BaseContract {
 
     balanceOf(owner: string, overrides?: CallOverrides): Promise<BigNumber>;
 
-    c_0xec197219(
-      c__0xec197219: BytesLike,
-      overrides?: CallOverrides
-    ): Promise<BigNumber>;
-
     creator(overrides?: CallOverrides): Promise<BigNumber>;
 
     fee(overrides?: CallOverrides): Promise<BigNumber>;
@@ -1529,11 +1500,6 @@ export class TestMarketProxy extends BaseContract {
 
     balanceOf(
       owner: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
-
-    c_0xec197219(
-      c__0xec197219: BytesLike,
       overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 

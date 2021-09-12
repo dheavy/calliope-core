@@ -29,6 +29,14 @@ declare module "hardhat/types/runtime" {
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IAccessControlEnumerable__factory>;
     getContractFactory(
+      name: "IAccessControl",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAccessControl__factory>;
+    getContractFactory(
+      name: "IAccessControlEnumerable",
+      signerOrOptions?: ethers.Signer | FactoryOptions
+    ): Promise<Contracts.IAccessControlEnumerable__factory>;
+    getContractFactory(
       name: "Ownable",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.Ownable__factory>;
@@ -100,14 +108,6 @@ declare module "hardhat/types/runtime" {
       name: "IProduct",
       signerOrOptions?: ethers.Signer | FactoryOptions
     ): Promise<Contracts.IProduct__factory>;
-    getContractFactory(
-      name: "Decimal",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Decimal__factory>;
-    getContractFactory(
-      name: "Math",
-      signerOrOptions?: ethers.Signer | FactoryOptions
-    ): Promise<Contracts.Math__factory>;
     getContractFactory(
       name: "StringUtils",
       signerOrOptions?: ethers.Signer | FactoryOptions
