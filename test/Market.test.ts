@@ -2,6 +2,8 @@ import { ethers } from 'hardhat';
 import asPromised from 'chai-as-promised';
 import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import Decimal from '../utils/Decimal';
+import { TestMarketProxy } from '../../core/types/TestMarketProxy';
+import { TestMarketProxy__factory } from '../../core/types/factories/TestMarketProxy__factory';
 import {
   BigNumber,
   BigNumberish
@@ -15,9 +17,9 @@ import {
   ContractFactory
 } from 'ethers';
 import {
-  smockit,
-  MockContract
-} from '@eth-optimism/smock';
+  MockContract,
+  smock
+} from '@defi-wonderland/smock';
 
 use(asPromised);
 
@@ -60,7 +62,7 @@ describe('Market', () => {
   let defaultFee: Fee;
   let testERC20: Contract;
   let marketProxy: Contract;
-  let mockMarketProxy: MockContract;
+  let mockMarketProxy: MockContract<TestMarketProxy>;
   let preparedMarket: Contract;
   let moneyMinter: SignerWithAddress;
   let serviceFeeRecipient: SignerWithAddress;
@@ -96,7 +98,8 @@ describe('Market', () => {
       .connect(moneyMinter)
       .deploy(currency, defaultFee);
 
-    mockMarketProxy = await smockit(marketProxy);
+    const MockMarketFactory = await smock.mock<TestMarketProxy__factory>('TestMarketProxy');
+    mockMarketProxy = await MockMarketFactory.deploy(currency, defaultFee);
 
     productAddr = await marketProxy.address;
 
@@ -205,7 +208,7 @@ describe('Market', () => {
     });
 
     it('returns false if #areValidBidShares is false', async () => {
-      mockMarketProxy.smocked.areValidBidShares.will.return.with(false);
+      mockMarketProxy.areValidBidShares.returns(false);
 
       await expect(mockMarketProxy.isValidBid(tokenId, 10))
         .to.eventually.be.false;

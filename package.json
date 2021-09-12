@@ -25,7 +25,6 @@
     "check": "hardhat check"
   },
   "devDependencies": {
-    "@eth-optimism/smock": "^1.1.6",
     "@nomiclabs/ethereumjs-vm": "^4",
     "@nomiclabs/hardhat-ethers": "^2.0.2",
     "@nomiclabs/hardhat-etherscan": "^2.1.2",
@@ -58,5 +57,8 @@
     "ts-node": "^10.0.0",
     "typechain": "^5.1.0",
     "typescript": "^4.3.2"
+  },
+  "dependencies": {
+    "@defi-wonderland/smock": "^2.0.3"
   }
 }
