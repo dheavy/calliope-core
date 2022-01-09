@@ -1,6 +1,7 @@
 # calliope-core
 
-Smart contracts for codename Calliope, an application powering the NFTV model in Fashion
+Smart contracts for codename Calliope, an application powering the NFTV model in Fashion.
+Inpired by the Zora protocol.
 
 ## Protocol Overview
 
